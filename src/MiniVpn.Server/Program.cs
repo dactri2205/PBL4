@@ -59,7 +59,7 @@ if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInR
     Console.Error.WriteLine("Wintun requires Administrator. Open PowerShell with 'Run as administrator' and start the server again.");
     Environment.ExitCode = 1; return;
 }
-var certificate = X509CertificateLoader.LoadPkcs12FromFile(args[1], pfxPassword, X509KeyStorageFlags.EphemeralKeySet);
+using var certificate = X509CertificateLoader.LoadPkcs12FromFile(args[1], pfxPassword, X509KeyStorageFlags.UserKeySet);
 var accounts = JsonSerializer.Deserialize<Dictionary<string, PasswordRecord>>(File.ReadAllText(args[2])) ?? throw new InvalidDataException("accounts.json empty");
 using var stop = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
