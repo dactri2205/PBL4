@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.env
+certs/
+accounts.json
+wintun.dll
+*.pfx
+.dotnet/
+.download/
