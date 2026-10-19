@@ -7,3 +7,10 @@ wintun.dll
 *.pfx
 .dotnet/
 .download/
+
+# Website development artifacts
+node_modules/
+.qa/
+*.log
+.DS_Store
+Thumbs.db
