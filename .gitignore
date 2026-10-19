@@ -1,14 +1,3 @@
-**/bin/
-**/obj/
-.env
-certs/
-accounts.json
-wintun.dll
-*.pfx
-.dotnet/
-.download/
-
-# Website development artifacts
 node_modules/
 .qa/
 *.log
