@@ -8,11 +8,11 @@ Header chia ba phần: logo bên trái, icon + chữ ở giữa, điều khiển
 
 ## Trang chủ
 
-Hai KPI Thành viên / Phòng ban là button mở modal rộng. Thành viên mặc định hiện 5 lãnh đạo và trưởng phòng bằng carousel ảnh + tilt 3D; tìm kiếm theo tên/chức danh/phòng ban có hoặc không dấu trong toàn bộ danh sách, xóa từ khóa về nhóm lãnh đạo. Có số kết quả, empty state và nút xóa. Phòng ban mở carousel các phòng; chọn phòng thay nội dung modal bằng carousel thành viên đúng phòng, có tìm kiếm trong phòng và nút quay lại. Không tự chạy carousel.
+Hai KPI Thành viên / Phòng ban là button mở modal rộng. Thành viên mặc định hiện 5 lãnh đạo và trưởng phòng bằng carousel ảnh + tilt 3D. Khi tìm kiếm theo tên/chức danh/phòng ban (hỗ trợ không dấu), kết quả toàn công ty hiển thị bằng lưới 3 cột: ảnh nhỏ, tên, chức danh, phòng ban; không tilt hoặc trượt ngang. Xóa từ khóa trở về carousel lãnh đạo. Có số kết quả, empty state và nút xóa. Phòng ban hiển thị lưới 2 cột để thấy hết các lựa chọn; chọn phòng để xem đội ngũ, tìm kiếm trong phòng và quay lại. Đội ngũ tối đa 8 người dùng carousel khi chưa tìm kiếm; trên 8 người dùng lưới. Mọi kết quả tìm kiếm dùng lưới. Không tự chạy carousel.
 
 API `getCompanyDirectory()` chỉ trả profile công khai (tên, chức danh, phòng ban, ảnh và cờ giới thiệu lãnh đạo), không trả username, quyền tài khoản, trạng thái, dự án hoặc công việc. Hồ sơ giới thiệu và vai trò quản trị độc lập. KPI lấy số lượng thành viên đang hoạt động + hồ sơ Ban điều hành, số phòng ban từ chính danh sách; dữ liệu ban đầu có 9 người và 2 phòng, thay số minh họa 128/08 trước đây.
 
-Hero split, tiêu đề Việt, CTA đến bản tin, ảnh văn phòng bên phải, gradient và technical grid. Không lặp nút đăng nhập trong Hero. Latest Update Pill dẫn đến bài công khai cụ thể; không dùng chung dữ liệu với chuông cá nhân. Bốn KPI đồng đều và phần giá trị ngắn, không gallery bản tin hoặc chart.
+Hero split, tiêu đề Việt, CTA đến bản tin, ảnh văn phòng bên phải, gradient và technical grid. Không lặp nút đăng nhập trong Hero. Latest Update Pill dẫn đến bài công khai cụ thể; không dùng chung dữ liệu với chuông cá nhân. Ba KPI đồng đều và phần giá trị ngắn, không gallery bản tin hoặc chart.
 
 ## Đăng nhập
 

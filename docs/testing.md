@@ -23,7 +23,7 @@ Thực hiện bằng Node.js và Chrome headless cài sẵn trên Windows trong 
 `node tools/browser-smoke.mjs` đã qua các luồng sau:
 
 - Tất cả 6 trang phản hồi HTTP 200 và khởi tạo thành công.
-- Home có Hero, 4 KPI, điều hướng khách và font cục bộ.
+- Home có Hero, 3 KPI, điều hướng khách và font cục bộ.
 - Bản tin tìm kiếm được và mở đúng bài đọc.
 - Login không có placeholder; kiểm tra bắt buộc, hiện mật khẩu, phản hồi chưa có Backend.
 - Chọn Minh/Linh cùng phòng ban cho kết quả dự án và task khác nhau.
@@ -45,6 +45,8 @@ Thực hiện bằng Node.js và Chrome headless cài sẵn trên Windows trong 
 Lần bổ sung hover trên laptop đã kiểm tra bằng Chrome: navbar mở/thu gạch chân, giữ gạch chân trang hiện tại và hỗ trợ keyboard focus; KPI nâng 4px, icon scale 1.1, đổi màu số và không dịch các thẻ lân cận; ô giá trị đổi nền/nét trên mà chữ không dịch chuyển. Reduced-motion tắt nâng/scale icon. Không tràn trang ở 1280, 1366, 1440 và 1920px, không có lỗi JavaScript trong lượt kiểm tra này.
 
 ## Modal danh bạ thành viên và phòng ban
+
+Lần chỉnh sửa tra cứu sang lưới đã được kiểm tra trên Chrome qua Live Server: mặc định vẫn là carousel 5 lãnh đạo; tìm không dấu/hoa thường trả lưới thẻ gọn; trường hợp không có kết quả và xóa từ khóa; lưới phòng ban 2 cột; chọn phòng nhỏ hiện carousel, tìm kiếm hiện lưới và quay lại trả focus đúng nút. Đã mô phỏng phòng 14 người trong browser (không sửa dữ liệu mẫu) để kiểm tra tự chuyển sang lưới, không tràn ngang modal ở 1280, 1366, 1440 và 1920px. Không ghi nhận lỗi JavaScript hoặc tài nguyên thiếu.
 
 Modal danh bạ mới đã được kiểm tra bằng Chrome với Live Server đang chạy: mặc định chỉ lãnh đạo/trưởng phòng; tìm kiếm toàn công ty không phân biệt dấu/hoa thường; xóa từ khóa; không có kết quả; nút trước/sau, bàn phím, kéo chuột và tilt; chọn phòng, tìm trong phòng và quay lại; Escape trả focus; reduced-motion; không tràn ngang ở 1280–1920px. Carousel trang phòng ban vẫn hoạt động, không có pageerror hoặc ảnh thiếu trong lượt này.
 

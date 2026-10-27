@@ -386,10 +386,4 @@ export const statistics = [
     note: "Vững nền tảng, bền tương lai",
     icon: "spark",
   },
-  {
-    label: "Hoạt động năm 2026",
-    value: "24",
-    note: "Học hỏi và gắn kết cùng nhau",
-    icon: "calendar",
-  },
 ];

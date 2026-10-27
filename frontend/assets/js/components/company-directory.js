@@ -1,11 +1,7 @@
 import { api } from "../core/data-source.js";
 import { esc, icon, searchInput } from "../core/ui.js";
 import { openModal } from "./modal.js";
-import {
-  memberCarousel,
-  carouselShell,
-  initCarousel,
-} from "./member-carousel.js";
+import { memberCarousel, initCarousel } from "./member-carousel.js";
 
 const normalize = (text) =>
   String(text)
@@ -15,6 +11,11 @@ const normalize = (text) =>
     .replace(/Đ/g, "D")
     .toLocaleLowerCase("vi")
     .trim();
+
+// A compact layout makes matching people easy to scan without horizontal browsing.
+function memberGrid(members, title) {
+  return `<section class="directory-results" aria-label="${esc(title)}"><h3>${esc(title)}</h3><ul class="directory-member-grid">${members.map((u) => `<li><article class="directory-person"><img class="directory-portrait" src="assets/images/${esc(u.photo || "portrait-fallback")}.${u.photo ? "jpg" : "svg"}" alt="Ảnh minh họa cho ${esc(u.name)}" loading="lazy"><div class="directory-person-info"><h4>${esc(u.name)}</h4><p>${esc(u.job)}</p><span>${esc(u.departmentName)}</span></div></article></li>`).join("")}</ul></section>`;
+}
 
 export async function openCompanyDirectory(mode = "members") {
   const { members, departments } = await api.getCompanyDirectory();
@@ -65,17 +66,20 @@ export async function openCompanyDirectory(mode = "members") {
       body.querySelector("[data-count]").textContent = query
         ? `${list.length} thành viên phù hợp${department ? " trong phòng ban" : " trong toàn công ty"}`
         : `${list.length} ${department ? "thành viên phòng ban" : "lãnh đạo và trưởng phòng"}`;
+      const useGrid = Boolean(query) || (department && list.length > 8);
       results.innerHTML = list.length
-        ? memberCarousel(list, {
-            id: "directory-member-track",
-            title: query
-              ? "Kết quả tìm kiếm"
-              : department
-                ? "Đội ngũ phòng ban"
-                : "Những người dẫn dắt",
-            eyebrow: department ? department.code : "Con người An Việt",
-            showDepartment: true,
-          })
+        ? useGrid
+          ? memberGrid(list, query ? "Kết quả tìm kiếm" : "Đội ngũ phòng ban")
+          : memberCarousel(list, {
+              id: "directory-member-track",
+              title: query
+                ? "Kết quả tìm kiếm"
+                : department
+                  ? "Đội ngũ phòng ban"
+                  : "Những người dẫn dắt",
+              eyebrow: department ? department.code : "Con người An Việt",
+              showDepartment: true,
+            })
         : `<div class="directory-empty">${icon("users")}<h3>${query ? "Không tìm thấy thành viên phù hợp" : "Chưa có thành viên được giới thiệu"}</h3><p>${query ? "Thử tên khác hoặc xóa từ khóa để xem lại danh sách." : "Thông tin đội ngũ sẽ được cập nhật tại đây."}</p></div>`;
       dispose = initCarousel(results);
     }
@@ -99,24 +103,16 @@ export async function openCompanyDirectory(mode = "members") {
       <p class="result-count">${departments.length} phòng ban · ${members.length} thành viên, bao gồm Ban điều hành</p>
       ${
         departments.length
-          ? carouselShell(
-              departments
-                .map(
-                  (
-                    d,
-                  ) => `<article class="member-card carousel-slide department-slide"><button class="department-card" data-department="${esc(d.id)}" aria-label="Xem thành viên phòng ${esc(d.name)}">
+          ? `<section class="directory-results" aria-label="Các phòng ban"><h3>Các phòng ban</h3><div class="directory-department-grid">${departments
+              .map(
+                (
+                  d,
+                ) => `<article><button class="department-card" data-department="${esc(d.id)}" aria-label="Xem thành viên phòng ${esc(d.name)}">
         <span class="department-card-top"><span class="project-symbol">${icon("building")}</span><span class="eyebrow">${esc(d.code)}</span></span>
         <h3>${esc(d.name)}</h3><p>${esc(d.description)}</p><span class="department-card-bottom"><span>${d.memberCount} thành viên</span><span class="text-link">Xem đội ngũ ${icon("arrow")}</span></span>
         </button></article>`,
-                )
-                .join(""),
-              {
-                id: "directory-department-track",
-                title: "Các phòng ban",
-                eyebrow: "Kết nối chuyên môn",
-                label: "Danh sách phòng ban",
-              },
-            )
+              )
+              .join("")}</div></section>`
           : '<p class="directory-empty">Chưa có phòng ban được giới thiệu.</p>'
       }`;
     dispose = initCarousel(body);

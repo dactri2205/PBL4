@@ -9,7 +9,7 @@ function renderKpi(s) {
   const card = s.action
     ? `<button type="button" class="surface-card kpi kpi-link" data-directory="${esc(s.action)}" aria-haspopup="dialog">${content}<span class="kpi-hint">${label} ${icon("arrow")}</span></button>`
     : `<article class="surface-card kpi">${content}</article>`;
-  return `<div class="col-12 col-sm-6 col-lg-3">${card}</div>`;
+  return `<div class="col-12 col-sm-6 col-lg-4">${card}</div>`;
 }
 export async function render(root) {
   const [stats, news] = await Promise.all([

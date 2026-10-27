@@ -28,7 +28,7 @@ HTML5, CSS3 với Design Tokens, Vanilla JavaScript ES6+ / Native ES Modules, Bo
 
 | Trang             | Chức năng                                                                                                                                       |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.html`      | Hero chia đôi, gradient đen–teal–cyan, ảnh văn phòng, latest update pill, 4 KPI, giá trị tập thể                                                |
+| `index.html`      | Hero chia đôi, gradient đen–teal–cyan, ảnh văn phòng, latest update pill, 3 KPI, giá trị tập thể                                                |
 | `login.html`      | Thẻ đăng nhập giữa trang, username/password, nhãn phía trên, không placeholder, hiện/ẩn mật khẩu, kiểm tra bắt buộc và phản hồi chưa có Backend |
 | `news.html`       | Danh sách bản tin, lọc chuyên mục, tìm kiếm, đọc bài qua `?article=n1`                                                                          |
 | `department.html` | Bento phòng ban, mục tiêu chung, thành viên dạng carousel ảnh với tilt 3D, dự án đúng phân công                                                 |
@@ -39,7 +39,7 @@ Header dùng chung, icon + chữ và gạch dưới mục hiện tại, menu thu
 
 ## Development Preview
 
-Ở trang chủ, có thể bấm KPI **Thành viên** hoặc **Phòng ban** ngay cả ở giao diện khách để xem profile giới thiệu công khai. Modal Thành viên mặc định có carousel lãnh đạo/trưởng phòng và tìm kiếm toàn đội ngũ (hỗ trợ không dấu); modal Phòng ban cho chọn phòng, xem carousel đội ngũ và quay lại. Dữ liệu ban đầu gồm **9 thành viên hoạt động** (6 tài khoản mẫu + 3 hồ sơ Ban điều hành) và **2 phòng ban**; KPI được tính từ dữ liệu thay cho số minh họa cũ. Profile Ban điều hành không phải tài khoản đăng nhập, và chức danh trưởng phòng độc lập với quyền ADMIN/EMPLOYEE.
+Ở trang chủ, có thể bấm KPI **Thành viên** hoặc **Phòng ban** ngay cả ở giao diện khách để xem profile giới thiệu công khai. Modal Thành viên mặc định có carousel lãnh đạo/trưởng phòng; tìm kiếm toàn đội ngũ (hỗ trợ không dấu) chuyển sang lưới thẻ gọn, xóa từ khóa trở lại carousel. Modal Phòng ban hiển thị lưới các phòng, chọn phòng để xem đội ngũ và quay lại. Đội ngũ tối đa 8 người dùng carousel, trên 8 người dùng lưới; kết quả tìm kiếm luôn dùng lưới. Dữ liệu ban đầu gồm **9 thành viên hoạt động** (6 tài khoản mẫu + 3 hồ sơ Ban điều hành) và **2 phòng ban**; KPI được tính từ dữ liệu thay cho số minh họa cũ. Profile Ban điều hành không phải tài khoản đăng nhập, và chức danh trưởng phòng độc lập với quyền ADMIN/EMPLOYEE.
 
 Mở **http://localhost:5500/?demo=1** để hiện thanh chọn người dùng mẫu. Thanh này không xuất hiện trong giao diện mặc định. Chế độ được giữ trong `sessionStorage` của tab hiện tại để có thể di chuyển giữa các trang.
 

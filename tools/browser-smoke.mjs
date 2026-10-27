@@ -58,14 +58,14 @@ try {
     path: ".qa/screenshots/home-desktop.png",
     fullPage: true,
   });
-  assert.equal(await page.locator(".kpi").count(), 4);
+  assert.equal(await page.locator(".kpi").count(), 3);
   assert.equal(await page.locator(".main-nav a").count(), 2);
   assert.ok(
     await page.evaluate(() =>
       document.fonts.check('600 16px "Be Vietnam Pro"', "Tiếng Việt"),
     ),
   );
-  results.push("Guest home: hero, four KPIs, public navigation, local fonts");
+  results.push("Guest home: hero, three KPIs, public navigation, local fonts");
   for (const route of [
     "login.html",
     "news.html",

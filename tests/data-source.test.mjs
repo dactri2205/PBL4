@@ -15,7 +15,7 @@ const select = (id) => {
 test("guest receives public information but no private records", async () => {
   select(null);
   assert.ok((await api.getAnnouncements()).length);
-  assert.equal((await api.getStatistics()).length, 4);
+  assert.equal((await api.getStatistics()).length, 3);
   assert.deepEqual(await api.getTasks(), []);
   assert.deepEqual(await api.getProjects(), []);
   assert.deepEqual(await api.getNotifications(), []);
