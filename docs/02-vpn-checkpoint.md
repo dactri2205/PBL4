@@ -114,6 +114,7 @@ Get-NetFirewallRule -DisplayName 'MiniVPN *' | Remove-NetFirewallRule
 | `wintun.dll` missing | Đặt DLL amd64 chính thức cạnh `.exe` của mỗi ứng dụng; chạy build Release đúng kiến trúc x64. |
 | `Access denied` khi tạo adapter/route | Chạy PowerShell Administrator; xem `Preflight.ps1`. |
 | TLS certificate rejected | Đối chiếu fingerprint SHA256, ngày giờ hệ thống, chứng chỉ A và cổng LAN đúng. Không tắt xác thực. |
+| Server ghi `platform does not support ephemeral keys` | Dừng server bằng Ctrl+C, cập nhật mã nguồn mới và build lại trên A. Server cần nạp PFX bằng `UserKeySet` để Schannel trên Windows dùng được khóa riêng. Lỗi này xảy ra trước khi kiểm tra mật khẩu VPN. |
 | TCP 42424 thất bại | Kiểm tra hai IP LAN, Wi-Fi client isolation, Windows Firewall profile và rule chỉ cho B. |
 | Kết nối VPN nhưng 8080 thất bại | So sánh `InterfaceIndex`, IP/route, rule firewall Wintun trên A và log server; kiểm tra xung đột dải 10.8.0.0/24. |
 | 8080 thành công nhưng trang không tải | Đúng ở giai đoạn 4 vì website chưa chạy; giai đoạn 5 mới cần Docker `127.0.0.1:18080`. |
