@@ -2,29 +2,29 @@
 
 ## 1. Giới thiệu
 
-Mini VPN PBL4 — VPN và website nội bộ mẫu chạy trên laptop A.
+Mini VPN PBL4 — VPN và cổng thông tin nội bộ An Việt chạy trên laptop A.
 
 Mã nguồn hiện có:
 
 - **Backend:** Server/Client .NET 10.
 - **Giao diện:** Windows Forms cho VPN Client.
-- **Website mẫu:** `MiniVpn.InternalWeb` chỉ lắng nghe tại `127.0.0.1:18080` trên A.
+- **Website nội bộ:** `MiniVpn.InternalWeb` phục vụ website An Việt trong `web/frontend`, chỉ lắng nghe tại `127.0.0.1:18080` trên A. Tài nguyên được sao chép vào `wwwroot` khi build/publish; không cần chạy thêm Node.js.
 - **Bảo mật:** `SslStream`, PBKDF2.
 - **Mạng:** Giao thức khung, cấp IP phiên, Wintun, route và TCP relay tại `10.8.0.1:8080`.
 
-**Trạng thái:** Đã có website mẫu để demo truy cập qua VPN; chưa có database hoặc Docker Compose.
+**Trạng thái:** Đã tích hợp frontend An Việt để truy cập qua VPN; dữ liệu và phiên xem thử vẫn là dữ liệu mẫu phía trình duyệt, chưa có API đăng nhập, database hoặc Docker Compose.
 
 > **Lưu ý:** Chưa ghi nhận trong repository kết quả kiểm tra HTTP trước/sau VPN trên hai laptop thật; cần hoàn thành phép thử này trước khi nghiệm thu.
 
 ## 2. Chạy demo website qua VPN
 
-Trên laptop A, chạy website mẫu trong một PowerShell:
+Trên laptop A, chạy website trong một PowerShell:
 
 ```powershell
 dotnet run --project .\src\MiniVpn.InternalWeb\MiniVpn.InternalWeb.csproj -c Release
 ```
 
-Trong PowerShell Administrator khác trên A, chạy MiniVPN server theo [hướng dẫn demo web](docs/04-internal-web-demo.md). Website chỉ mở trực tiếp trên A tại `http://127.0.0.1:18080`; client VPN mở qua `http://10.8.0.1:8080`.
+Trong PowerShell Administrator khác trên A, chạy MiniVPN server theo [hướng dẫn demo web](docs/04-internal-web-demo.md). Website chỉ mở trực tiếp trên A tại `http://127.0.0.1:18080`; client VPN mở qua `http://10.8.0.1:8080`. Trang chủ là An Việt; thêm `?demo=1` để chọn người dùng mẫu và xem các trang phòng ban, công việc, quản trị. Chi tiết frontend tại [web/README.md](web/README.md).
 
 ## 3. Cách chạy VPN Client
 
@@ -41,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Run-Desktop.ps1
 - [Biên dịch và thử VPN](docs/02-vpn-checkpoint.md)
 - [Demo website chỉ truy cập qua VPN](docs/04-internal-web-demo.md)
 
-Sau khi kiểm thử HTTP trước/sau VPN trên hai máy thành công, có thể thay website mẫu bằng ứng dụng web thật và tích hợp database/Docker.
+Sau khi kiểm thử HTTP trước/sau VPN trên hai máy thành công, có thể tích hợp API xác thực, database và Docker cho frontend hiện có.
 
 ## 5. Trạng thái kiểm thử và lưu ý
 

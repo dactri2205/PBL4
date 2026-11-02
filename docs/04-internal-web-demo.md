@@ -1,6 +1,6 @@
 # Demo website nội bộ chỉ truy cập qua MiniVPN
 
-`MiniVpn.InternalWeb` là website mẫu chạy trên laptop A. Nó chỉ lắng nghe ở `127.0.0.1:18080`; MiniVPN server chuyển tiếp kết nối từ `10.8.0.1:8080` tới địa chỉ đó. Máy khác trong LAN không truy cập được cổng web trực tiếp bằng IP LAN của A. Đây là trang mẫu để chứng minh đường đi của website qua VPN; dự án chưa có database hoặc Docker Compose.
+`MiniVpn.InternalWeb` phục vụ website An Việt từ `web/frontend` trên laptop A. Nó chỉ lắng nghe ở `127.0.0.1:18080`; MiniVPN server chuyển tiếp kết nối từ `10.8.0.1:8080` tới địa chỉ đó. Máy khác trong LAN không truy cập được cổng web trực tiếp bằng IP LAN của A. Tài nguyên frontend được sao chép vào `wwwroot` khi build/publish, không cần chạy máy chủ Node.js. Website vẫn dùng dữ liệu mẫu phía trình duyệt; dự án chưa có API xác thực, database hoặc Docker Compose.
 
 ## 1. Laptop A: chạy website và VPN server
 
@@ -16,7 +16,7 @@ dotnet run --project .\src\MiniVpn.InternalWeb\MiniVpn.InternalWeb.csproj -c Rel
 curl.exe --noproxy "*" http://127.0.0.1:18080/
 ```
 
-Kết quả phải chứa `Website nội bộ`. Nếu cổng 18080 đã bị ứng dụng khác chiếm, dừng ứng dụng đó trước khi chạy website mẫu.
+Kết quả phải chứa `Trang chủ · An Việt`. Nếu website cũ đang chạy, dừng bằng `Ctrl+C` rồi chạy lại lệnh trên để build và nạp giao diện mới. Nếu cổng 18080 đã bị ứng dụng khác chiếm, dừng ứng dụng đó trước khi chạy website.
 
 Mở PowerShell **Administrator** thứ hai tại thư mục gốc dự án. Thay hai IP ví dụ bằng IP LAN thực tế của A và B; không chạy lại `Make-DemoCertificate.ps1` nếu `certs/server.pfx` đã có.
 
@@ -46,7 +46,7 @@ curl.exe --noproxy "*" --connect-timeout 5 http://192.168.106.106:8080/
 curl.exe --noproxy "*" --connect-timeout 5 http://10.8.0.1:8080/
 ```
 
-Ba lệnh phải không trả về trang `Website nội bộ`. Thay `192.168.106.106` nếu IP LAN của A đã đổi. Nếu `10.8.0.1` trùng với thiết bị khác trong LAN, phải đổi dải VPN trước khi demo.
+Ba lệnh phải không trả về trang An Việt. Thay `192.168.106.106` nếu IP LAN của A đã đổi. Nếu `10.8.0.1` trùng với thiết bị khác trong LAN, phải đổi dải VPN trước khi demo.
 
 ## 3. Laptop B: kết nối VPN rồi mở web
 
@@ -56,7 +56,7 @@ Chạy `scripts/Run-Desktop.ps1` từ PowerShell Administrator trên B. Điền 
 http://10.8.0.1:8080/
 ```
 
-Trang phải hiện tiêu đề `Website nội bộ` và thời gian máy chủ. Có thể kiểm tra bằng lệnh:
+Trang phải hiện website An Việt, tải được CSS, ảnh, font và các trang liên kết. Có thể mở `http://10.8.0.1:8080/?demo=1` để chọn người dùng mẫu và xem các trang phòng ban, công việc, quản trị. Form đăng nhập hiện chưa kết nối backend; tài khoản VPN trong `accounts.json` không phải tài khoản đăng nhập website. Có thể kiểm tra HTML bằng lệnh:
 
 ```powershell
 curl.exe --noproxy "*" --connect-timeout 5 http://10.8.0.1:8080/
@@ -69,7 +69,7 @@ Ngắt VPN rồi thử lại URL này; trang phải không còn tải được. 
 | Trạng thái | IP LAN A | Website qua IP LAN A:18080 | Website qua 10.8.0.1:8080 |
 | --- | --- | --- | --- |
 | B/C chưa kết nối VPN | Liên lạc được | Không truy cập được | Không tải được trang |
-| B đã kết nối VPN | Liên lạc được | Không truy cập được | Hiện `Website nội bộ` |
+| B đã kết nối VPN | Liên lạc được | Không truy cập được | Hiện website An Việt |
 | B đã ngắt VPN | Liên lạc được | Không truy cập được | Không tải được trang |
 
-Website mẫu chỉ chứng minh kiến trúc truy cập qua VPN. Khi phát triển website thật, giữ backend chỉ lắng nghe ở `127.0.0.1:18080` hoặc publish Docker vào đúng địa chỉ đó; không bind trực tiếp website ra IP LAN A.
+Khi tích hợp API và database, giữ backend chỉ lắng nghe ở `127.0.0.1:18080` hoặc publish Docker vào đúng địa chỉ đó; không bind trực tiếp website ra IP LAN A.
