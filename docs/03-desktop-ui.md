@@ -25,7 +25,7 @@ Trong lần kiểm tra trước, `dotnet build` thành công nhưng **Windows Ap
    ```
 
 3. Nhập IP LAN của A (ví dụ `192.168.1.10`), cổng `42424`, tài khoản `alice`, mật khẩu VPN và fingerprint SHA256 64 ký tự đã đối chiếu từ A. Nhấn **Kết nối VPN**. Trạng thái dự kiến chuyển từ TLS → đăng nhập → tạo Wintun/route → `Đã kết nối — 10.8.0.2`.
-4. Nhấn **Thử kết nối 10.8.0.1:8080**. Nếu server và firewall hoạt động, log báo mở TCP thành công. Đây là phép thử đường hầm; website Docker chưa được triển khai nên chưa có trang để xem.
+4. Nhấn **Thử kết nối 10.8.0.1:8080**. Nếu server và firewall hoạt động, log báo mở TCP thành công. Để xem trang thật, chạy `MiniVpn.InternalWeb` trên A theo [hướng dẫn demo web](04-internal-web-demo.md), rồi mở `http://10.8.0.1:8080/` trong trình duyệt trên B.
 5. Nhấn **Ngắt kết nối** hoặc đóng cửa sổ. Ứng dụng chờ xóa IP/route trước khi thoát. Kiểm tra `Get-NetRoute -DestinationPrefix '10.8.0.1/32'` để xác nhận route đã biến mất.
 
 Nếu báo thiếu `wintun.dll`, sao chép đúng DLL amd64 vào thư mục chứa `.exe` của giao diện; DLL của client dòng lệnh ở thư mục khác không được dùng tự động. Nếu báo Access denied, chạy PowerShell Administrator. Nếu fingerprint sai, TLS sẽ từ chối trước bước đăng nhập VPN. Mật khẩu được xóa khỏi ô nhập khi nhấn Kết nối và không ghi vào log/file.

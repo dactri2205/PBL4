@@ -1,0 +1,12 @@
+{
+  "name": "anviet-portal",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Buildless Vietnamese intranet frontend with local assets",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "check": "node tools/check.mjs",
+    "test": "node --test tests/data-source.test.mjs"
+  }
+}
