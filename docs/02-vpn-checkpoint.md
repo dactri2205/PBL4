@@ -6,7 +6,7 @@
 
 ## Chuẩn bị trên A và B
 
-1. Mở PowerShell **Run as Administrator**. Chạy `powershell -ExecutionPolicy Bypass -File .\scripts\Preflight.ps1` trên mỗi máy. A cần Docker Desktop; giai đoạn này chưa cần khởi động website.
+1. Mở PowerShell **Run as Administrator**. Chạy `powershell -ExecutionPolicy Bypass -File .\scripts\Preflight.ps1` trên mỗi máy. Demo website mẫu không cần Docker; chạy website trên A theo [hướng dẫn demo web](04-internal-web-demo.md) khi muốn thử HTTP.
 2. Cài .NET 10 SDK hoặc runtime Windows x64. Tải bản Wintun chính thức từ [wintun.net](https://www.wintun.net/), lấy `wintun.dll` trong thư mục `bin\amd64` của gói chính thức. Đặt một bản cạnh file `MiniVpn.Server.exe` trên A và cạnh `MiniVpn.Client.exe` trên B. Không dùng DLL không rõ nguồn. [API Wintun](https://git.zx2c4.com/wintun/tree/api/wintun.h) quy định vòng đời adapter/session.
 3. Sao chép toàn bộ repository sang A/B hoặc build từ source trên mỗi máy:
 
@@ -56,7 +56,7 @@ Get-NetIPAddress -InterfaceAlias 'MiniVpn-Server' -AddressFamily IPv4
 Get-NetTCPConnection -LocalAddress '10.8.0.1' -LocalPort 8080 -State Listen
 ```
 
-Kết quả mong đợi: IP `10.8.0.1`, relay lắng nghe ở 8080. Server chỉ bind VPN TLS trên IP LAN A, không bind `0.0.0.0`. Khi Docker chưa chạy, relay bắt được TCP nhưng không có backend; `Test-NetConnection` vẫn có thể báo kết nối thành công, còn HTTP sẽ thất bại. Đây là phép thử đường hầm trước website.
+Kết quả mong đợi: IP `10.8.0.1`, relay lắng nghe ở 8080. Server chỉ bind VPN TLS trên IP LAN A, không bind `0.0.0.0`. Nếu `MiniVpn.InternalWeb` chưa chạy trên A, relay có thể bắt được TCP nhưng không có backend; `Test-NetConnection` vẫn có thể báo thành công, còn HTTP sẽ thất bại. Chạy website mẫu theo [hướng dẫn demo web](04-internal-web-demo.md) để kiểm tra trang thật.
 
 ## B: kết nối và chứng minh route
 
@@ -117,6 +117,6 @@ Get-NetFirewallRule -DisplayName 'MiniVPN *' | Remove-NetFirewallRule
 | Server ghi `platform does not support ephemeral keys` | Dừng server bằng Ctrl+C, cập nhật mã nguồn mới và build lại trên A. Server cần nạp PFX bằng `UserKeySet` để Schannel trên Windows dùng được khóa riêng. Lỗi này xảy ra trước khi kiểm tra mật khẩu VPN. |
 | TCP 42424 thất bại | Kiểm tra hai IP LAN, Wi-Fi client isolation, Windows Firewall profile và rule chỉ cho B. |
 | Kết nối VPN nhưng 8080 thất bại | So sánh `InterfaceIndex`, IP/route, rule firewall Wintun trên A và log server; kiểm tra xung đột dải 10.8.0.0/24. |
-| 8080 thành công nhưng trang không tải | Đúng ở giai đoạn 4 vì website chưa chạy; giai đoạn 5 mới cần Docker `127.0.0.1:18080`. |
+| 8080 thành công nhưng trang không tải | Kiểm tra `MiniVpn.InternalWeb` đang chạy tại `127.0.0.1:18080` trên A bằng `curl.exe --noproxy "*" http://127.0.0.1:18080/`. |
 
 Giao thức khung: 1 byte version (`1`), 1 byte type, 4 byte độ dài big endian, payload tối đa 2048 byte; IP packet tối đa 1500 byte. `Login`, `Welcome`, `Denied`, `Packet` chỉ chạy trong TLS. Client pin SHA256 chứng chỉ; không có tùy chọn bỏ qua. Mỗi packet IPv4 được kiểm tra nguồn, đích, không phân mảnh và chỉ cho TCP web 8080 hoặc ICMP echo. Bọc TCP trong TLS/TCP tạo head-of-line blocking và có thể giảm hiệu năng khi mất gói.
