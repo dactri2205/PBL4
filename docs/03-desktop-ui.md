@@ -1,5 +1,7 @@
 # Chạy giao diện Mini VPN trên Windows
 
+Bản phát hành client một file EXE có hướng dẫn tại [07-client-exe.md](07-client-exe.md). Bản đó đã nhúng runtime .NET và Wintun, không cần DLL rời hoặc source trên máy client. Ứng dụng yêu cầu UAC/Administrator khi chạy bình thường, có nút Mở website và tự mở HTTPS sau khi kết nối; self-test đóng gói không tạo adapter hoặc yêu cầu quyền.
+
 Ứng dụng cửa sổ là `MiniVpn.Desktop` (Windows Forms, .NET 10). Nó dùng chung mã kết nối trong `MiniVpn.ClientCore` với client dòng lệnh. Cửa sổ có IP LAN server, cổng, tài khoản, mật khẩu, fingerprint SHA256, nút Kết nối/Ngắt, trạng thái/IP VPN, log và nút thử TCP tới `10.8.0.1:8080`. [Microsoft hướng dẫn dùng Windows Forms trong .NET hiện đại](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/migration/how-to-upgrade-winforms) và cập nhật giao diện từ luồng nền [tại đây](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/controls/how-to-make-thread-safe-calls).
 
 ## Xem giao diện ngay (chưa cần server)
@@ -11,7 +13,7 @@ dotnet build .\MiniVpn.sln -c Release
 powershell -ExecutionPolicy Bypass -File .\scripts\Run-Desktop.ps1
 ```
 
-Hoặc mở file `src\MiniVpn.Desktop\bin\Release\net10.0-windows\MiniVpn.Desktop.exe`. Script trên chạy DLL bằng `dotnet` để hiện lỗi khởi động trong terminal; `dotnet run` với `WinExe` có thể thoát mà không cho thấy lỗi. Giao diện có thể mở không cần Wintun hay quyền Administrator nếu chính sách Windows cho phép chạy assembly mới biên dịch. Khi chưa có server, nút Kết nối sẽ báo lỗi; đó không phải là kết quả thử VPN thành công.
+Hoặc mở file `src\MiniVpn.Desktop\bin\Release\net10.0-windows\MiniVpn.Desktop.exe`. Script trên chạy DLL bằng `dotnet` để hiện lỗi khởi động trong terminal; app sẽ yêu cầu quyền Administrator trước khi mở giao diện. Khi chưa có server, nút Kết nối sẽ báo lỗi; đó không phải là kết quả thử VPN thành công. Bản build thông thường vẫn cần runtime/DLL rời, khác bản EXE đóng gói.
 
 Trong lần kiểm tra trước, `dotnet build` thành công nhưng **Windows Application Control** chặn tải `MiniVpn.Desktop.dll` (`0x800711C7`). Event `CodeIntegrity/Operational` ID `3077` ghi `PolicyName=VerifiedAndReputableDesktop`. Chính sách trên máy đã thay đổi và bộ smoke test hiện chạy 8/8, nhưng cửa sổ Desktop **chưa được kiểm chứng trực quan sau thay đổi đó**. Nếu lỗi chặn xuất hiện lại, kiểm tra trạng thái Smart App Control tại Windows Security → App & browser control. [Microsoft cho biết Smart App Control không có ngoại lệ từng ứng dụng](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions). Việc build thành công không tự chứng minh ứng dụng đã chạy.
 
@@ -25,7 +27,7 @@ Trong lần kiểm tra trước, `dotnet build` thành công nhưng **Windows Ap
    ```
 
 3. Nhập IP LAN của A (ví dụ `192.168.1.10`), cổng `42424`, tài khoản `alice`, mật khẩu VPN và fingerprint SHA256 64 ký tự đã đối chiếu từ A. Nhấn **Kết nối VPN**. Trạng thái dự kiến chuyển từ TLS → đăng nhập → tạo Wintun/route → `Đã kết nối — 10.8.0.2`.
-4. Nhấn **Thử kết nối 10.8.0.1:8080**. Nếu server và firewall hoạt động, log báo mở TCP thành công. Để xem trang thật, chạy `MiniVpn.InternalWeb` trên A theo [hướng dẫn demo web](04-internal-web-demo.md), rồi mở `http://10.8.0.1:8080/` trong trình duyệt trên B.
+4. Website tự mở khi kết nối nếu tùy chọn này được bật; có thể nhấn **Mở website nội bộ** để mở lại. Mặc định là `https://10.8.0.1:8080/`; chỉ chọn HTTP khi server dùng Development HTTP rõ ràng. **Thử kết nối 10.8.0.1:8080** chỉ kiểm tra TCP, không thay kiểm tra nội dung HTTP/TLS. Chạy gateway/backend trên A theo [hướng dẫn tích hợp](../webnew/docs/integrated-deployment.md).
 5. Nhấn **Ngắt kết nối** hoặc đóng cửa sổ. Ứng dụng chờ xóa IP/route trước khi thoát. Kiểm tra `Get-NetRoute -DestinationPrefix '10.8.0.1/32'` để xác nhận route đã biến mất.
 
 Nếu báo thiếu `wintun.dll`, sao chép đúng DLL amd64 vào thư mục chứa `.exe` của giao diện; DLL của client dòng lệnh ở thư mục khác không được dùng tự động. Nếu báo Access denied, chạy PowerShell Administrator. Nếu fingerprint sai, TLS sẽ từ chối trước bước đăng nhập VPN. Mật khẩu được xóa khỏi ô nhập khi nhấn Kết nối và không ghi vào log/file.

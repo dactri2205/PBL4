@@ -1,0 +1,13 @@
+{
+  "name": "anviet-api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "set-password": "node src/cli/set-password.js"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  }
+}

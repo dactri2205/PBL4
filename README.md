@@ -1,62 +1,63 @@
-# PBL4 — Mini VPN
+# PBL4 — MiniVPN và cổng thông tin An Việt
 
-## 1. Giới thiệu
+Dự án gồm MiniVPN .NET/Wintun trên Windows và website An Việt có backend Node.js/PostgreSQL. Mã website đã hợp nhất trong `webnew/`; frontend được copy/publish bởi `MiniVpn.InternalWeb`.
 
-Mini VPN PBL4 — VPN và cổng thông tin nội bộ An Việt chạy trên laptop A.
+- VPN: TLS/TCP trên IP LAN máy A (thường cổng 42424), pin fingerprint SHA256.
+- Mạng VPN: server `10.8.0.1`, client `10.8.0.2–254`, route tới server `10.8.0.1/32`.
+- Web relay: `10.8.0.1:8080 → 127.0.0.1:18080`.
+- Gateway .NET: phục vụ FE và `/api/vpn/*`; API nghiệp vụ chuyển tới Node.js trên `127.0.0.1:13000`.
+- Control API VPN: trong chính process server, chỉ loopback `18181`, có service token.
+- ADMIN thật của website được cấp quyền quản trị VPN; EMPLOYEE và Development Preview không có quyền này.
+- Tài khoản VPN trong `accounts.json` tách biệt với tài khoản website trong PostgreSQL.
 
-Mã nguồn hiện có:
+## Chạy hệ thống
 
-- **Backend:** Server/Client .NET 10.
-- **Giao diện:** Windows Forms cho VPN Client.
-- **Website nội bộ:** `MiniVpn.InternalWeb` phục vụ website An Việt trong `web/frontend`, chỉ lắng nghe tại `127.0.0.1:18080` trên A. Tài nguyên được sao chép vào `wwwroot` khi build/publish; không cần chạy thêm Node.js.
-- **Bảo mật:** `SslStream`, PBKDF2.
-- **Mạng:** Giao thức khung, cấp IP phiên, Wintun, route và TCP relay tại `10.8.0.1:8080`.
-
-**Trạng thái:** Đã tích hợp frontend An Việt để truy cập qua VPN; dữ liệu và phiên xem thử vẫn là dữ liệu mẫu phía trình duyệt, chưa có API đăng nhập, database hoặc Docker Compose.
-
-> **Lưu ý:** Chưa ghi nhận trong repository kết quả kiểm tra HTTP trước/sau VPN trên hai laptop thật; cần hoàn thành phép thử này trước khi nghiệm thu.
-
-## 2. Chạy demo website qua VPN
-
-Trên laptop A, chạy website trong một PowerShell:
+Làm theo [hướng dẫn tích hợp](webnew/docs/integrated-deployment.md) để khởi động theo thứ tự: PostgreSQL/migration/API → VPN server → gateway website → watchdog.
 
 ```powershell
-dotnet run --project .\src\MiniVpn.InternalWeb\MiniVpn.InternalWeb.csproj -c Release
+dotnet build .\MiniVpn.sln -c Release
+# Sau khi cấu hình backend, HTTPS và secret theo hướng dẫn:
+dotnet run --project .\src\MiniVpn.InternalWeb -c Release
 ```
 
-Trong PowerShell Administrator khác trên A, chạy MiniVPN server theo [hướng dẫn demo web](docs/04-internal-web-demo.md). Website chỉ mở trực tiếp trên A tại `http://127.0.0.1:18080`; client VPN mở qua `http://10.8.0.1:8080`. Trang chủ là An Việt; thêm `?demo=1` để chọn người dùng mẫu và xem các trang phòng ban, công việc, quản trị. Chi tiết frontend tại [web/README.md](web/README.md).
+Website trên A: `https://127.0.0.1:18080/`. Client sau khi kết nối VPN: `https://10.8.0.1:8080/`. Đăng nhập website bằng ADMIN, mở menu tài khoản → Quản trị VPN hoặc `/vpn-admin.html`. HTTP chỉ dùng với cấu hình Development rõ ràng trong hướng dẫn.
 
-## 3. Cách chạy VPN Client
+Client Windows:
 
-Để mở cửa sổ client và xem lỗi khởi động nếu có, chạy lệnh PowerShell:
+Để phát hành cho laptop client chỉ với một EXE, chạy `scripts/Publish-Client.ps1`. Bản self-contained kèm .NET/Wintun, yêu cầu Administrator và có thể tự mở website sau khi kết nối. Xem [đóng gói và sử dụng EXE](docs/07-client-exe.md).
+
+Để phát hành cho laptop client chỉ với một EXE, chạy `scripts/Publish-Client.ps1`. Bản self-contained kèm .NET/Wintun, yêu cầu Administrator và có thể tự mở website sau khi kết nối. Xem [đóng gói và sử dụng EXE](docs/07-client-exe.md).
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Run-Desktop.ps1
 ```
 
-## 4. Tài liệu hướng dẫn
+## Tài liệu
 
-- [Hướng dẫn giao diện](docs/03-desktop-ui.md)
 - [Khảo sát và kiến trúc](docs/01-preflight-and-architecture.md)
-- [Biên dịch và thử VPN](docs/02-vpn-checkpoint.md)
-- [Demo website chỉ truy cập qua VPN](docs/04-internal-web-demo.md)
+- [Build, Wintun, route và kiểm thử hai laptop](docs/02-vpn-checkpoint.md)
+- [VPN Client Windows](docs/03-desktop-ui.md)
+- [Phát hành client một file EXE](docs/07-client-exe.md)
+- [Phát hành client một file EXE](docs/07-client-exe.md)
+- [Kiểm chứng web chỉ qua VPN](docs/04-internal-web-demo.md)
+- [Tài khoản, thu hồi phiên, log, cảnh báo và watchdog](docs/05-vpn-administration.md)
+- [API VPN và xác thực dùng chung](docs/06-vpn-api.md)
+- [FE/BE website](webnew/README.md)
+- [Khởi động bản ghép](webnew/docs/integrated-deployment.md)
 
-Sau khi kiểm thử HTTP trước/sau VPN trên hai máy thành công, có thể tích hợp API xác thực, database và Docker cho frontend hiện có.
+## Kiểm thử và giới hạn
 
-## 5. Trạng thái kiểm thử và lưu ý
+```powershell
+dotnet run --project .\tests\MiniVpn.Smoke -c Release
+dotnet run --project .\tests\MiniVpn.Management.Tests -c Release
+Push-Location .\webnew
+npm.cmd run check
+npm.cmd test
+Pop-Location
+```
 
-- Windows Application Control từng chặn các assembly mới biên dịch với mã lỗi `0x800711C7`.
-- Trạng thái chính sách đã thay đổi và bộ smoke test hiện chạy thành công **8/8**.
-- Sử dụng `scripts/Run-Desktop.ps1` để quan sát lỗi nếu chính sách chặn trở lại.
-- Đường hầm Wintun vẫn cần được kiểm thử bằng PowerShell với quyền **Administrator trên cả hai laptop**.
+Bật `MINIVPN_FULL_STACK_TEST=1` và `MINIVPN_BROWSER_TEST=1` để kiểm thử thêm Node/PostgreSQL thật trong container tạm cùng Chrome qua HTTPS. Xem điều kiện và phạm vi tại [hướng dẫn tích hợp](webnew/docs/integrated-deployment.md).
 
-## 6. Bảo mật
+Các test tự động không thay kiểm chứng Wintun, firewall, route và truy cập HTTP trước/sau VPN trên hai laptop có Administrator. Dự án hiện dành cho LAN demo; chưa có nghiệm thu truy cập từ Internet/NAT.
 
-Không đưa các tệp hoặc thông tin nhạy cảm sau lên Git:
-
-- Chứng chỉ PFX.
-- Mật khẩu.
-- `accounts.json`.
-- `wintun.dll`.
-
-Đây là sản phẩm học tập, chỉ sử dụng trong môi trường **LAN demo**.
+Không đưa accounts.json, PFX/private key, mật khẩu, service token, .env, database dump hoặc wintun.dll lên Git. Cấu hình mẫu tại `config/vpn-management.example.json` không chứa secret.

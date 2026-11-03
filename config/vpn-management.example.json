@@ -1,0 +1,30 @@
+{
+  "VpnManagement": {
+    "ControlPort": 18181,
+    "StateDirectory": "runtime/vpn",
+    "RetentionDays": 30,
+    "SampleSeconds": 10,
+    "AlertCooldownSeconds": 300,
+    "ThresholdDurationSeconds": 60,
+    "CpuPercent": 90,
+    "ProcessRamMiB": 1024,
+    "SystemRamPercent": 90,
+    "DiskFreePercent": 10,
+    "WatchdogFailures": 3,
+    "WebHealthUseHttps": false
+  },
+  "VpnAdmin": {
+    "AuthenticationMode": "Portal",
+    "ControlPort": 18181,
+    "TemporaryLoginEnabled": false,
+    "AllowInsecureHttpDevelopment": false,
+    "SessionMinutes": 30
+  },
+  "VpnWeb": {
+    "HttpsCertificatePath": ""
+  },
+  "Logging": {
+    "LogLevel": { "Default": "Warning", "Microsoft.Hosting.Lifetime": "Information" }
+  },
+  "Portal": { "ApiBaseUrl": "http://127.0.0.1:13000/" }
+}

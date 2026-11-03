@@ -34,12 +34,19 @@ public static class VpnConnection
             try { await tcp.ConnectAsync(serverIp, options.Port, timeout.Token); }
             catch (OperationCanceledException) when (!stop.IsCancellationRequested) { throw new TimeoutException("Máy chủ VPN không phản hồi trong 15 giây."); }
         }
+        string? certificateRejection = null;
         using var tls = new SslStream(tcp.GetStream(), false, (_, cert, _, _) =>
         {
-            if (cert is null) return false;
+            if (cert is null) { certificateRejection = "Máy chủ không cung cấp chứng chỉ TLS."; return false; }
             using var x = new X509Certificate2(cert);
-            return x.NotBefore <= DateTime.UtcNow && x.NotAfter >= DateTime.UtcNow &&
-                CryptographicOperations.FixedTimeEquals(pinnedHash, x.GetCertHash(HashAlgorithmName.SHA256));
+            var nowUtc = DateTime.UtcNow;
+            if (x.NotAfter.ToUniversalTime() < nowUtc)
+            { certificateRejection = $"Chứng chỉ VPN đã hết hạn lúc {x.NotAfter:yyyy-MM-dd HH:mm:ss zzz}. Quản trị viên cần dùng chứng chỉ còn hạn."; return false; }
+            if (x.NotBefore.ToUniversalTime() > nowUtc)
+            { certificateRejection = "Chứng chỉ VPN chưa có hiệu lực. Kiểm tra ngày giờ máy A/B và thời hạn chứng chỉ."; return false; }
+            if (!CryptographicOperations.FixedTimeEquals(pinnedHash, x.GetCertHash(HashAlgorithmName.SHA256)))
+            { certificateRejection = "Fingerprint SHA256 không khớp chứng chỉ VPN mà máy chủ đang dùng. Lấy lại fingerprint từ máy A qua kênh tin cậy."; return false; }
+            return true;
         });
         using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop))
         {
@@ -52,6 +59,8 @@ public static class VpnConnection
                     CertificateRevocationCheckMode = X509RevocationMode.NoCheck
                 }, timeout.Token);
             }
+            catch (AuthenticationException ex) when (certificateRejection is not null)
+            { throw new AuthenticationException(certificateRejection, ex); }
             catch (OperationCanceledException) when (!stop.IsCancellationRequested) { throw new TimeoutException("Bắt tay TLS không hoàn tất trong 15 giây."); }
         }
         report(new("TLS đã xác thực; đang đăng nhập VPN…"));

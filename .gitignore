@@ -5,5 +5,11 @@ certs/
 accounts.json
 wintun.dll
 *.pfx
+/runtime/
+*.lock
+*.legacy-*.bak
+*.local.json
+*.json.*.tmp
 .dotnet/
 .download/
+/artifacts/

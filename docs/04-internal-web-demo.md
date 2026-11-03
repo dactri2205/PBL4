@@ -1,75 +1,47 @@
-# Demo website nội bộ chỉ truy cập qua MiniVPN
+# Kiểm chứng website chỉ truy cập qua MiniVPN
 
-`MiniVpn.InternalWeb` phục vụ website An Việt từ `web/frontend` trên laptop A. Nó chỉ lắng nghe ở `127.0.0.1:18080`; MiniVPN server chuyển tiếp kết nối từ `10.8.0.1:8080` tới địa chỉ đó. Máy khác trong LAN không truy cập được cổng web trực tiếp bằng IP LAN của A. Tài nguyên frontend được sao chép vào `wwwroot` khi build/publish, không cần chạy máy chủ Node.js. Website vẫn dùng dữ liệu mẫu phía trình duyệt; dự án chưa có API xác thực, database hoặc Docker Compose.
+Website hợp nhất dùng `webnew/frontend` và backend Node.js/PostgreSQL, qua gateway `MiniVpn.InternalWeb` ở `127.0.0.1:18080`. MiniVPN chuyển tiếp TCP từ `10.8.0.1:8080` tới gateway. Xem [thứ tự khởi động, HTTPS và đăng nhập](../webnew/docs/integrated-deployment.md) trước khi làm các phép thử dưới đây.
 
-## 1. Laptop A: chạy website và VPN server
+## Laptop A
 
-Mở PowerShell thứ nhất tại thư mục gốc dự án (không cần Administrator) và giữ cửa sổ mở:
+Chạy backend, VPN server và gateway theo hướng dẫn. A có thể mở `https://127.0.0.1:18080/` trực tiếp mà không cần VPN. Web không bind IP LAN; Node chỉ publish loopback và PostgreSQL không publish ra LAN.
 
-```powershell
-dotnet run --project .\src\MiniVpn.InternalWeb\MiniVpn.InternalWeb.csproj -c Release
-```
-
-Ứng dụng phải báo `Now listening on: http://127.0.0.1:18080`. Kiểm tra tại A:
-
-```powershell
-curl.exe --noproxy "*" http://127.0.0.1:18080/
-```
-
-Kết quả phải chứa `Trang chủ · An Việt`. Nếu website cũ đang chạy, dừng bằng `Ctrl+C` rồi chạy lại lệnh trên để build và nạp giao diện mới. Nếu cổng 18080 đã bị ứng dụng khác chiếm, dừng ứng dụng đó trước khi chạy website.
-
-Mở PowerShell **Administrator** thứ hai tại thư mục gốc dự án. Thay hai IP ví dụ bằng IP LAN thực tế của A và B; không chạy lại `Make-DemoCertificate.ps1` nếu `certs/server.pfx` đã có.
-
-```powershell
-$serverLanIp = '192.168.106.106'
-$clientLanIp = '192.168.106.165'
-$env:MINIVPN_PFX_PASSWORD = '123456'
-New-NetFirewallRule -DisplayName 'MiniVPN TLS LAN demo' -Direction Inbound -Action Allow -Profile Any -Protocol TCP -LocalAddress $serverLanIp -RemoteAddress $clientLanIp -LocalPort 42424
-dotnet run --project .\src\MiniVpn.Server\MiniVpn.Server.csproj -c Release -- $serverLanIp .\certs\server.pfx .\accounts.json 42424
-```
-
-Giữ server chạy. Nó phải báo `VPN listening ... web relay 10.8.0.1:8080`. Trong PowerShell Administrator thứ ba trên A, cho phép cổng web **chỉ trên adapter VPN**:
+Giữ các rule firewall chỉ trên đúng adapter VPN và nguồn đã cấp quyền:
 
 ```powershell
 New-NetFirewallRule -DisplayName 'MiniVPN web over tunnel' -Direction Inbound -Action Allow -Profile Any -Protocol TCP -InterfaceAlias 'MiniVpn-Server' -LocalAddress '10.8.0.1' -RemoteAddress '10.8.0.0/24' -LocalPort 8080
 ```
 
-Nếu đã có rule cùng tên từ lần demo trước thì không cần tạo lại. A cần `wintun.dll` cạnh `MiniVpn.Server.exe`, PFX và `accounts.json` như [hướng dẫn VPN](02-vpn-checkpoint.md).
+Nếu rule đã có thì không tạo lại. Cổng TLS VPN trên IP LAN chỉ mở cho các client được chỉ định; xem [hướng dẫn mạng](02-vpn-checkpoint.md). Không mở cổng 18080, 13000, 18181 hoặc PostgreSQL ra LAN.
 
-## 2. Laptop B: thử khi chưa kết nối VPN
+## Laptop B/C: trước khi kết nối
 
-Trước khi mở client VPN, chạy trên B:
-
-```powershell
-curl.exe --noproxy "*" --connect-timeout 5 http://192.168.106.106:18080/
-curl.exe --noproxy "*" --connect-timeout 5 http://192.168.106.106:8080/
-curl.exe --noproxy "*" --connect-timeout 5 http://10.8.0.1:8080/
-```
-
-Ba lệnh phải không trả về trang An Việt. Thay `192.168.106.106` nếu IP LAN của A đã đổi. Nếu `10.8.0.1` trùng với thiết bị khác trong LAN, phải đổi dải VPN trước khi demo.
-
-## 3. Laptop B: kết nối VPN rồi mở web
-
-Chạy `scripts/Run-Desktop.ps1` từ PowerShell Administrator trên B. Điền IP LAN A, cổng `42424`, tài khoản và mật khẩu VPN, cùng fingerprint SHA256 của chứng chỉ A. B cần `wintun.dll` cạnh `MiniVpn.Desktop.exe`. Khi giao diện báo IP VPN (thường là `10.8.0.2`), mở trình duyệt trên B:
-
-```text
-http://10.8.0.1:8080/
-```
-
-Trang phải hiện website An Việt, tải được CSS, ảnh, font và các trang liên kết. Có thể mở `http://10.8.0.1:8080/?demo=1` để chọn người dùng mẫu và xem các trang phòng ban, công việc, quản trị. Form đăng nhập hiện chưa kết nối backend; tài khoản VPN trong `accounts.json` không phải tài khoản đăng nhập website. Có thể kiểm tra HTML bằng lệnh:
+Thay IP LAN A trong ví dụ bằng IP thật:
 
 ```powershell
-curl.exe --noproxy "*" --connect-timeout 5 http://10.8.0.1:8080/
+curl.exe --noproxy "*" --connect-timeout 5 https://192.168.1.10:18080/
+curl.exe --noproxy "*" --connect-timeout 5 https://192.168.1.10:8080/
+curl.exe --noproxy "*" --connect-timeout 5 https://10.8.0.1:8080/
 ```
 
-Ngắt VPN rồi thử lại URL này; trang phải không còn tải được. Lặp lại phép thử **chưa kết nối VPN** trên laptop C cùng LAN để chứng minh C có thể thấy IP LAN A nhưng không xem được web nội bộ. `Test-NetConnection` chỉ kiểm tra bắt tay TCP; phải kiểm tra nội dung HTTP để xác nhận website thực sự hoạt động.
+Không được nhận nội dung An Việt từ ba địa chỉ đó. Kiểm tra xung đột subnet VPN nếu LAN đã dùng 10.8.0.0/24.
 
-## Kết quả cần ghi cho báo cáo
+## Laptop B: có VPN và sau khi ngắt
 
-| Trạng thái | IP LAN A | Website qua IP LAN A:18080 | Website qua 10.8.0.1:8080 |
-| --- | --- | --- | --- |
-| B/C chưa kết nối VPN | Liên lạc được | Không truy cập được | Không tải được trang |
-| B đã kết nối VPN | Liên lạc được | Không truy cập được | Hiện website An Việt |
-| B đã ngắt VPN | Liên lạc được | Không truy cập được | Không tải được trang |
+Chạy client Windows bằng Administrator, đối chiếu fingerprint VPN qua kênh tin cậy và đăng nhập. Khi được cấp IP, mở `https://10.8.0.1:8080/`. Tin cậy chứng chỉ HTTPS website theo hướng dẫn; không tắt kiểm tra TLS.
 
-Khi tích hợp API và database, giữ backend chỉ lắng nghe ở `127.0.0.1:18080` hoặc publish Docker vào đúng địa chỉ đó; không bind trực tiếp website ra IP LAN A.
+Kiểm tra trang chủ, assets, đăng nhập website, công việc/phòng ban và dashboard VPN bằng ADMIN thật. EMPLOYEE không được gọi API VPN; ADMIN mẫu trong `?demo=1` không cấp quyền thật.
+
+```powershell
+curl.exe --noproxy "*" --connect-timeout 5 https://10.8.0.1:8080/
+```
+
+Ngắt VPN và thử lại; không được tải nội dung mới. Trang đã tải có thể vẫn còn trong bộ nhớ trình duyệt, vì vậy dùng HTTP request mới để kiểm chứng. Test-NetConnection chỉ chứng minh bắt tay TCP, chưa chứng minh website trả được nội dung.
+
+| Trạng thái | IP LAN A:18080/8080 | 10.8.0.1:8080 |
+| --- | --- | --- |
+| B/C chưa có VPN | Không truy cập được web | Không tải được |
+| B có VPN | Không truy cập được web trực tiếp | Tải được An Việt |
+| B ngắt VPN | Không truy cập được web | Không tải nội dung mới |
+
+Thử B và C cùng kết nối, IP khác nhau; ngắt/khóa phiên B từ A phải đóng cả tunnel/relay B và giữ C hoạt động. Reset mật khẩu VPN cũng thu hồi mọi phiên tương ứng. HTTP demo chỉ thực hiện theo cấu hình Development rõ ràng; đổi các URL sang http tương ứng trong kịch bản đó.
