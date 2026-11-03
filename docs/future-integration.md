@@ -1,16 +1,20 @@
 # Ranh giới tích hợp giai đoạn sau
 
-Hiện tại chỉ có frontend với dữ liệu mẫu. Máy chủ `tools/serve.mjs` phục vụ file để dùng ES Modules; không có API hay xác thực.
+## Hiện trạng
+
+Dự án có Node.js API, PostgreSQL và Nginx trong Docker Compose. API có health, bản tin, thống kê, danh bạ, xác thực, API phòng ban/dự án/công việc, thông báo cá nhân và quản trị người dùng có session. Các trang dùng API khi preview không bật. Preview `?demo=1` tiếp tục dùng mock data. Máy chủ `tools/serve.mjs` chỉ phục vụ frontend và không proxy API.
 
 ## Adapter Backend
 
-Các trang gọi `api` trong `frontend/assets/js/core/data-source.js` qua phương thức async. Thay phần nội bộ module bằng HTTP client khi có Backend, giữ model hoặc viết bước chuyển đổi payload rõ ràng. Các nhóm nghiệp vụ hiện có: thông báo công khai/thống kê, người dùng hiện tại, phòng ban, dự án được phân công, việc được phân công, thông báo cá nhân và quản trị người dùng.
+Các trang gọi `api` trong `frontend/assets/js/core/data-source.js` qua phương thức async. Adapter bản tin, thống kê, danh bạ, phòng ban, dự án, công việc, thông báo, quản trị người dùng và đổi mật khẩu gọi API khi không ở preview.
 
-Không có endpoint giả đang được gọi. Tên URL, pagination, lỗi nghiệp vụ và schema phản hồi phải được thống nhất cùng Backend sau. Khi tích hợp, bổ sung loading/error state phù hợp cho mạng thật; các trạng thái hiện tại được tối ưu cho mock local tức thời. Loại bỏ adapter mẫu khỏi bản production thay vì đóng gói toàn bộ dữ liệu mẫu vào client.
+Hợp đồng bản tin trả `{ data: [...] }`; thống kê trả `{ data: { members, departments } }`; danh bạ trả `{ data: { members, departments } }` với projection hồ sơ công khai. Chế độ `?demo=1` chỉ phục vụ xem thử; website mặc định dùng API thật.
 
 ## Xác thực và phân quyền
 
-Login gửi username/password qua HTTPS tới Backend, không lưu mật khẩu vào browser storage. Backend cấp phiên an toàn, ưu tiên cookie HttpOnly/Secure/SameSite phù hợp mô hình triển khai. Xử lý hết hạn phiên, đăng xuất, rate limit, CSRF và xác thực input ở server theo thiết kế cuối cùng.
+Đã có `POST /api/auth/login`, `POST /api/auth/logout` và `GET /api/me`. Password hash dùng Node scrypt; phiên ngẫu nhiên được lưu dưới dạng SHA-256 verifier trong PostgreSQL, cookie HttpOnly/SameSite=Lax hết hạn sau 8 giờ. Login có giới hạn 5 lần sai mỗi username trong 15 phút. Mọi endpoint thay đổi dữ liệu yêu cầu Origin khớp chính xác scheme và host hiện tại; request thiếu Origin hoặc khác origin bị từ chối. Đặt mật khẩu tài khoản bằng CLI tương tác, không có mật khẩu mẫu.
+
+Compose publish HTTPS trên loopback `127.0.0.1:18080`; Mini VPN relay chuyển tiếp qua `10.8.0.1:8080`. TLS website lab dùng certificate tự ký và `COOKIE_SECURE=true`. API Work lấy identity từ session server-side; nhân viên chỉ xem dự án là thành viên và công việc được giao; ADMIN có quyền xem rộng tại server. API phòng ban, thông báo và quản trị cũng kiểm tra session/quyền ở backend. Vô hiệu hóa tài khoản thu hồi session; đổi mật khẩu yêu cầu mật khẩu hiện tại và thu hồi các session cũ. Audit log ghi cùng transaction cho các thay đổi quản trị, trạng thái công việc và mật khẩu, không lưu mật khẩu. Việc còn lại là kiểm tra các luồng quyền bằng tài khoản thật và xác nhận sao lưu database.
 
 Role khác Department và khác ProjectMembership. Ví dụ Minh và Linh cùng IT nhưng chỉ Minh trong Alpha, Linh trong Beta. Máy chủ phải kiểm tra identity, role, department, membership và TaskAssignee trên từng thao tác; không tin ID/role client gửi lên. ADMIN có quyền rộng theo chính sách máy chủ được duyệt. Thu hồi/disable tài khoản cần thu hồi phiên thật và audit log. `demo-session.js` và các kiểm tra hiển thị hiện tại không đáp ứng những yêu cầu bảo mật này.
 
@@ -18,28 +22,23 @@ Home/Bản tin chung không yêu cầu đăng nhập ứng dụng. Department/Wo
 
 ## Database
 
-Dự kiến có Role, Department, User, Project, ProjectMembership, Task, TaskAssignee, Announcement và Notification. Dùng khóa ngoại, validation, migration và giao dịch theo Backend đã chọn. Không đồng nhất quyền với phòng ban hoặc tự cấp assignment theo department. Quy trình lưu số liệu public cần được định nghĩa thay cho KPI minh họa. Chưa tạo schema, migration hoặc kết nối Database.
+Schema PostgreSQL hiện có Department, User, DirectoryProfile, Project, ProjectMember, Task, TaskAssignee, Announcement và Notification. `database/migrate.js` áp dụng migration theo thứ tự, ghi checksum vào `schema_migrations`, khóa để ngăn hai runner cùng chạy và từ chối sửa migration đã áp dụng. Migration `030_public_directory_job.sql` tách chức danh công khai khỏi chức danh tài khoản. Không đồng nhất quyền với phòng ban hoặc tự cấp assignment theo department. Quy trình lưu số liệu public cần được định nghĩa thay cho KPI minh họa.
 
-## Hạ tầng dự kiến
+## Hạ tầng đang chạy
 
 ```text
-backend/                 # API, authentication, authorization
-database/                # Schema/migrations khi thiết kế được duyệt
-nginx/                   # Reverse proxy / load-balancing
-docker-compose.yml       # Orchestration cho demo sau
-.env.example             # Tên cấu hình, không chứa bí mật
+backend/                 # Node.js API cho auth, directory, work, notifications, admin
+database/                # PostgreSQL schema migrations and migrator
+nginx/                   # Phục vụ frontend và reverse proxy API
+docker-compose.yml       # web, api, db
+.env.example             # Mẫu biến cấu hình, không chứa secret thật
 ```
 
-Các đường dẫn này là kế hoạch; chưa có file hoặc thư mục rỗng tương ứng được tạo.
-
-Nginx phục vụ frontend cục bộ và proxy API. Nếu dùng nhiều instance Backend, cần lưu phiên/thông tin dùng chung phù hợp, health checks và chính sách cân bằng tải. Docker Desktop đóng gói các dịch vụ sau khi chốt công nghệ, có volume và cấu hình môi trường; secrets không được đưa vào frontend hoặc Git.
+Nếu dùng nhiều instance Backend, cần lưu phiên/thông tin dùng chung phù hợp, health checks và chính sách cân bằng tải. Secrets không được đưa vào frontend hoặc Git.
 
 Mini VPN giới hạn truy cập ở tầng mạng cho máy trong LAN/thiết bị được cấp quyền. Thử nghiệm route, DNS, TLS và firewall trong giai đoạn hạ tầng. Quyền truy cập mạng chỉ cho phép đến dịch vụ, không tự cấp quyền xem công việc người khác.
 
-## Lộ trình
+## Việc còn lại trong phạm vi đề tài
 
-1. Duyệt tài nguyên và nội dung doanh nghiệp thật.
-2. Thống nhất hợp đồng API và mô hình phân quyền/assignment.
-3. Triển khai Backend + Database và kiểm thử quyền ở server.
-4. Thay adapter mock, tích hợp form login và các trạng thái mạng.
-5. Đóng gói Docker/Nginx, cấu hình LAN/Mini VPN và kiểm thử đầy đủ.
+1. Kiểm tra quyền và các luồng API bằng tài khoản ADMIN/EMPLOYEE trên stack Docker.
+2. Tạo bản backup database và xác nhận cách khôi phục trên bản sao an toàn.

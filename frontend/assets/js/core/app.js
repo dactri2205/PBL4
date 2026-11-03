@@ -17,7 +17,7 @@ try {
     main.className = "page-container page";
     main.innerHTML = empty(
       "Khu vực quản trị",
-      "Tài khoản mẫu hiện tại không có giao diện quản trị.",
+      "Tài khoản hiện tại không có quyền truy cập giao diện quản trị.",
       '<a class="secondary-button" href="work.html">Về công việc của tôi</a>',
     );
   } else {

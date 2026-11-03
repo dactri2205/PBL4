@@ -18,14 +18,16 @@ Thực hiện bằng Node.js và Chrome headless cài sẵn trên Windows trong 
 
 Đây là kiểm thử hành vi mock phía client, không chứng minh phân quyền bảo mật ở server.
 
-## Kiểm tra trình duyệt
+## Kiểm tra trình duyệt trước khi thêm API/xác thực
+
+Các kết quả bên dưới là lượt QA frontend trước khi nối PostgreSQL và API đăng nhập. Chúng mô tả trạng thái tại thời điểm chạy đó, không xác nhận các luồng Backend mới.
 
 `node tools/browser-smoke.mjs` đã qua các luồng sau:
 
 - Tất cả 6 trang phản hồi HTTP 200 và khởi tạo thành công.
 - Home có Hero, 3 KPI, điều hướng khách và font cục bộ.
 - Bản tin tìm kiếm được và mở đúng bài đọc.
-- Login không có placeholder; kiểm tra bắt buộc, hiện mật khẩu, phản hồi chưa có Backend.
+- Login UI kiểm tra trường bắt buộc và nút hiện mật khẩu; khi đó form chưa gửi thông tin đến Backend.
 - Chọn Minh/Linh cùng phòng ban cho kết quả dự án và task khác nhau.
 - Mai có task empty state.
 - Drawer mở, đóng bằng Escape, đổi trạng thái và bảng cập nhật đúng bộ lọc.
@@ -52,4 +54,4 @@ Modal danh bạ mới đã được kiểm tra bằng Chrome với Live Server �
 
 ## Giới hạn
 
-Chưa kiểm thử trên Safari/Firefox, thiết bị cảm ứng vật lý hoặc screen reader. Các kiểm tra Chrome dùng kích thước viewport mobile; không thay cho đánh giá đầy đủ bằng thiết bị thật. Chưa làm audit WCAG tự động/toàn diện. Không có API, Database, đăng nhập thật hay hạ tầng để kiểm tra. Chưa có ảnh thiết kế người dùng cung cấp để đối chiếu từng pixel.
+Chưa kiểm thử trên Safari/Firefox, thiết bị cảm ứng vật lý hoặc screen reader. Các kiểm tra Chrome dùng kích thước viewport mobile; không thay cho đánh giá đầy đủ bằng thiết bị thật. Chưa làm audit WCAG tự động/toàn diện. Backend, migration và đăng nhập được bổ sung sau các lượt QA frontend ở trên; những kết quả này không bao gồm kiểm thử quyền API/PostgreSQL. Chưa có ảnh thiết kế người dùng cung cấp để đối chiếu từng pixel.

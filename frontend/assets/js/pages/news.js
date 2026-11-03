@@ -6,10 +6,10 @@ export async function render(root) {
   const selected = items.find((n) => n.id === articleId);
   root.className = "page-container page";
   if (selected) {
-    root.innerHTML = `<article class="article"><a class="text-link" href="news.html">${icon("left")} Tất cả bản tin</a><div class="mt-4"><span class="status-badge info">${esc(selected.category)}</span> <time class="small-text muted" datetime="${selected.date}">${date(selected.date)}</time></div><h1>${esc(selected.title)}</h1><p class="muted">${esc(selected.summary)}</p><div class="article-body">${selected.body.map((p) => `<p>${esc(p)}</p>`).join("")}</div><p class="small-text muted mt-4">Ban truyền thông An Việt · Nội dung minh họa</p></article>`;
+    root.innerHTML = `<article class="article"><a class="text-link" href="news.html">${icon("left")} Tất cả bản tin</a><div class="mt-4"><span class="status-badge info">${esc(selected.category)}</span> <time class="small-text muted" datetime="${esc(selected.date)}">${date(selected.date)}</time></div><h1>${esc(selected.title)}</h1><p class="muted">${esc(selected.summary)}</p><div class="article-body">${selected.body.map((p) => `<p>${esc(p)}</p>`).join("")}</div><p class="small-text muted mt-4">Ban truyền thông An Việt · Nội dung minh họa</p></article>`;
     return;
   }
-  root.innerHTML = `${heading("Thông tin & kết nối", "Bản tin An Việt", "Những cập nhật giúp chúng ta luôn cùng một nhịp.")}<div class="toolbar"><div class="tabs" aria-label="Lọc chuyên mục">${["Tất cả", ...new Set(items.map((n) => n.category))].map((c, i) => `<button data-category="${c}" aria-pressed="${i === 0}">${c}</button>`).join("")}</div></div><div class="toolbar">${searchInput("news-search", "Tìm kiếm bản tin")}<span class="result-count" id="news-count" aria-live="polite"></span></div><div class="news-list" id="news-list"></div>`;
+  root.innerHTML = `${heading("Thông tin & kết nối", "Bản tin An Việt", "Những cập nhật giúp chúng ta luôn cùng một nhịp.")}<div class="toolbar"><div class="tabs" aria-label="Lọc chuyên mục">${["Tất cả", ...new Set(items.map((n) => n.category))].map((c, i) => `<button data-category="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}</button>`).join("")}</div></div><div class="toolbar">${searchInput("news-search", "Tìm kiếm bản tin")}<span class="result-count" id="news-count" aria-live="polite"></span></div><div class="news-list" id="news-list"></div>`;
   let category = "Tất cả";
   const input = root.querySelector("#news-search");
   const paint = () => {
@@ -24,7 +24,7 @@ export async function render(root) {
       ? matches
           .map(
             (n) =>
-              `<a class="news-item" href="news.html?article=${n.id}"><time datetime="${n.date}">${date(n.date)}</time><div><span class="status-badge info">${esc(n.category)}</span><h2>${esc(n.title)}</h2><p>${esc(n.summary)}</p></div>${icon("arrow")}</a>`,
+              `<a class="news-item" href="news.html?article=${encodeURIComponent(n.id)}"><time datetime="${esc(n.date)}">${date(n.date)}</time><div><span class="status-badge info">${esc(n.category)}</span><h2>${esc(n.title)}</h2><p>${esc(n.summary)}</p></div>${icon("arrow")}</a>`,
           )
           .join("")
       : '<p class="empty">Không có bản tin phù hợp. Hãy thử từ khóa khác.</p>';

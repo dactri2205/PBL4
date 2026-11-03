@@ -1,5 +1,8 @@
 node_modules/
 .qa/
 *.log
+.env
+/backups/
+/anviet-lab.crt
 .DS_Store
 Thumbs.db

@@ -1,7 +1,15 @@
-import { icon } from "../core/ui.js";
-export async function render(root) {
+import { esc, icon } from "../core/ui.js";
+import { api } from "../core/data-source.js";
+import { isPreview } from "../core/demo-session.js";
+export async function render(root, user) {
   root.className = "login-page";
-  root.innerHTML = `<section class="login-card" aria-labelledby="login-heading"><div class="login-symbol">${icon("lock")}</div><h1 id="login-heading">Đăng nhập</h1><p class="login-intro">Chào mừng bạn trở lại không gian An Việt.</p><form id="login-form" novalidate><div class="field"><label for="username">Tên đăng nhập</label><input id="username" name="username" class="input" autocomplete="username" required aria-describedby="login-feedback"></div><div class="field"><label for="password">Mật khẩu</label><div class="password"><input type="password" id="password" name="password" class="input" autocomplete="current-password" required aria-describedby="login-feedback"><button type="button" id="show-password" aria-label="Hiện mật khẩu" aria-pressed="false">${icon("eye")}</button></div></div><button class="primary-button" type="submit">Đăng nhập ${icon("arrow")}</button><div class="feedback" id="login-feedback" role="status" aria-live="polite"></div></form><p class="login-help">Tài khoản được cấp bởi quản trị viên.<br>Cần hỗ trợ? Liên hệ bộ phận Công nghệ thông tin.</p></section>`;
+  if (user) {
+    root.innerHTML = `<section class="login-card" aria-labelledby="login-heading"><div class="login-symbol">${icon("lock")}</div><h1 id="login-heading">Bạn đã đăng nhập</h1><p class="login-intro">Xin chào ${esc(user.name)}.</p><a class="primary-button" href="index.html">Về trang chủ ${icon("arrow")}</a></section>`;
+    return;
+  }
+  const passwordChanged =
+    new URLSearchParams(location.search).get("password_changed") === "1";
+  root.innerHTML = `<section class="login-card" aria-labelledby="login-heading"><div class="login-symbol">${icon("lock")}</div><h1 id="login-heading">Đăng nhập</h1><p class="login-intro">Chào mừng bạn trở lại không gian An Việt.</p>${passwordChanged ? '<p class="notice" role="status">Mật khẩu đã đổi. Hãy đăng nhập lại bằng mật khẩu mới.</p>' : ""}<form id="login-form" novalidate><div class="field"><label for="username">Tên đăng nhập</label><input id="username" name="username" class="input" autocomplete="username" required aria-describedby="login-feedback"></div><div class="field"><label for="password">Mật khẩu</label><div class="password"><input type="password" id="password" name="password" class="input" autocomplete="current-password" required aria-describedby="login-feedback"><button type="button" id="show-password" aria-label="Hiện mật khẩu" aria-pressed="false">${icon("eye")}</button></div></div><button class="primary-button" type="submit">Đăng nhập ${icon("arrow")}</button><div class="feedback" id="login-feedback" role="status" aria-live="polite"></div></form><p class="login-help">Tài khoản được cấp bởi quản trị viên.<br>Cần hỗ trợ? Liên hệ bộ phận Công nghệ thông tin.</p></section>`;
   const form = root.querySelector("form"),
     password = root.querySelector("#password"),
     toggle = root.querySelector("#show-password");
@@ -24,14 +32,24 @@ export async function render(root) {
       invalid.focus();
       return;
     }
+    if (isPreview()) {
+      feedback.textContent = "Thoát chế độ xem thử để sử dụng đăng nhập thật.";
+      return;
+    }
     const submit = form.querySelector("[type=submit]");
     submit.disabled = true;
-    submit.textContent = "Đang kiểm tra kết nối…";
-    await new Promise((r) => setTimeout(r, 450));
-    feedback.textContent =
-      "Chưa kết nối Backend. Thông tin đăng nhập chưa được gửi hoặc xác thực.";
-    password.value = "";
-    submit.disabled = false;
-    submit.innerHTML = `Đăng nhập ${icon("arrow")}`;
+    submit.textContent = "Đang đăng nhập…";
+    try {
+      await api.login(root.querySelector("#username").value.trim(), password.value);
+      feedback.textContent = "Đăng nhập thành công. Đang chuyển về trang chủ…";
+      location.href = "index.html";
+    } catch (error) {
+      feedback.textContent = error.message || "Không thể đăng nhập. Vui lòng thử lại.";
+      password.value = "";
+      password.focus();
+    } finally {
+      submit.disabled = false;
+      submit.innerHTML = `Đăng nhập ${icon("arrow")}`;
+    }
   });
 }

@@ -4,6 +4,8 @@
 
 Header chia ba phần: logo bên trái, icon + chữ ở giữa, điều khiển phiên bên phải. Gạch dưới mục hiện tại. Khách chỉ có Trang chủ/Bản tin và nút đăng nhập. Nhân viên có Phòng ban/Công việc, chuông thông báo và profile. ADMIN thêm Quản trị. Không có sidebar.
 
+Trong Development Preview, các vai trò mẫu hiển thị đầy đủ các mục như mô tả. Với phiên thật, nhân viên thấy Trang chủ, Bản tin, Phòng ban, Công việc, thông báo và profile; ADMIN có thêm mục Quản trị.
+
 `?demo=1` bật thanh Development Preview. Đổi người dùng reload trang để toàn bộ header, nội dung và phạm vi dữ liệu đồng nhất. Tài khoản bị vô hiệu hóa được xử lý như khách. Điều kiện này chỉ phục vụ minh họa phía client.
 
 ## Trang chủ
@@ -16,7 +18,7 @@ Hero split, tiêu đề Việt, CTA đến bản tin, ảnh văn phòng bên ph�
 
 ## Đăng nhập
 
-Card trắng chính giữa, radius 20px, shadow mềm. Username và password có nhãn trên input, không placeholder, không đăng ký hoặc social login. Toggle mật khẩu có aria-pressed và nhãn đổi theo trạng thái. Submit kiểm tra bắt buộc, báo lỗi inline, vô hiệu hóa tạm thời nút khi kiểm tra, rồi thông báo chưa kết nối Backend. Không gửi hoặc lưu mật khẩu.
+Card trắng chính giữa, radius 20px, shadow mềm. Username và password có nhãn trên input, không placeholder, không đăng ký hoặc social login. Toggle mật khẩu có aria-pressed và nhãn đổi theo trạng thái. Submit kiểm tra bắt buộc, gửi thông tin tới API đăng nhập trong chế độ thật, báo lỗi inline và chuyển về trang chủ khi thành công. Preview yêu cầu thoát chế độ xem thử trước khi đăng nhập thật. Không lưu mật khẩu trong browser storage.
 
 ## Bản tin
 

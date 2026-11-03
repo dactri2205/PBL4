@@ -10,7 +10,7 @@ Cần Node.js hiện đại, không cần cài dependency để chạy ứng d�
 node tools/serve.mjs
 ```
 
-Mở **http://localhost:5500/**. Dừng bằng `Ctrl+C`. Có thể dùng `npm start` hoặc `npm.cmd start` trên Windows. Muốn đổi cổng: `$env:PORT=5501; node tools/serve.mjs`.
+Mở **http://localhost:5500/?demo=1** nếu chỉ chạy máy chủ frontend này; `?demo=1` giữ dữ liệu mẫu cho trang chủ và bản tin. Để chạy website kết nối API/PostgreSQL, dùng Docker Compose theo [docs/docker-deployment.md](docs/docker-deployment.md). Dừng máy chủ bằng `Ctrl+C`. Có thể dùng `npm start` hoặc `npm.cmd start` trên Windows. Muốn đổi cổng: `$env:PORT=5501; node tools/serve.mjs`.
 
 Nếu đã cài Python:
 
@@ -22,18 +22,18 @@ Không mở HTML bằng `file://` vì ứng dụng sử dụng ES Modules. `tool
 
 ## Công nghệ
 
-HTML5, CSS3 với Design Tokens, Vanilla JavaScript ES6+ / Native ES Modules, Bootstrap **5.3.3** cục bộ. Không có framework, bundler hoặc bước build. Bootstrap dùng cho grid và utility; các thành phần tùy biến dùng tên theo chức năng, không có tiền tố. Dùng các tên như `surface-card`, `data-table`, `status-badge` để tránh trùng class Bootstrap. Hai font chính là Manrope và Be Vietnam Pro, lưu cục bộ dạng TTF do tài nguyên Google Fonts trả về định dạng này. Không có yêu cầu kết nối internet lúc chạy.
+Frontend dùng HTML5, CSS3 Design Tokens, Vanilla JavaScript ES Modules và Bootstrap **5.3.3** cục bộ. Backend dùng Node.js, `pg` và PostgreSQL; Nginx phục vụ frontend/proxy API trong Docker Compose. Website không cần tải tài nguyên frontend từ Internet khi chạy.
 
 ## Các trang và chức năng
 
 | Trang             | Chức năng                                                                                                                                       |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `index.html`      | Hero chia đôi, gradient đen–teal–cyan, ảnh văn phòng, latest update pill, 3 KPI, giá trị tập thể                                                |
-| `login.html`      | Thẻ đăng nhập giữa trang, username/password, nhãn phía trên, không placeholder, hiện/ẩn mật khẩu, kiểm tra bắt buộc và phản hồi chưa có Backend |
-| `news.html`       | Danh sách bản tin, lọc chuyên mục, tìm kiếm, đọc bài qua `?article=n1`                                                                          |
+| `login.html`      | Đăng nhập qua API, hiện/ẩn mật khẩu và phản hồi lỗi; cần tài khoản được cấp và đặt mật khẩu |
+| `news.html`       | Danh sách bản tin từ API, lọc chuyên mục, tìm kiếm, đọc bài qua `?article=n1`                                                                      |
 | `department.html` | Bento phòng ban, mục tiêu chung, thành viên dạng carousel ảnh với tilt 3D, dự án đúng phân công                                                 |
-| `work.html`       | Thẻ dự án, viền trong khi hover/focus, bảng việc với 6 cột, tìm kiếm/lọc, drawer và cập nhật trạng thái mẫu                                     |
-| `admin.html`      | Bảng người dùng tách Vai trò / Phòng ban, tìm kiếm/lọc, xem/thêm/sửa, xác nhận đổi quyền và kích hoạt/vô hiệu hóa, khôi phục dữ liệu            |
+| `work.html`       | Thẻ dự án, bảng việc với 6 cột, tìm kiếm/lọc, drawer và cập nhật trạng thái qua API khi đăng nhập thật (hoặc dữ liệu mẫu trong preview)          |
+| `admin.html`      | Quản lý người dùng: tìm kiếm/lọc, xem/thêm/sửa, xác nhận đổi quyền, kích hoạt/vô hiệu hóa; API thật cho ADMIN, preview lưu trong phiên              |
 
 Header dùng chung, icon + chữ và gạch dưới mục hiện tại, menu thu gọn trên tablet/mobile, profile dropdown và thông báo cá nhân có trạng thái đã đọc. Dialog hỗ trợ Escape, focus được giới hạn bởi native `<dialog>`, đóng trả focus về phần tử mở nếu còn tồn tại. Giảm chuyển động được tôn trọng.
 
@@ -52,7 +52,7 @@ Mở **http://localhost:5500/?demo=1** để hiện thanh chọn người dùng 
 | Mai      | EMPLOYEE / IT       | Alpha; không có công việc được giao              |
 | An       | ADMIN / IT          | Xem toàn bộ dự án/việc và quản lý người dùng mẫu |
 
-Không có mật khẩu mẫu và không có xác thực thật. Gửi form đăng nhập không gửi mật khẩu đi đâu; form hiển thị thông báo Backend chưa kết nối. Đổi trạng thái công việc, thông báo, người dùng chỉ lưu trong phiên; không thay đổi máy chủ. Tài khoản mẫu bị vô hiệu hóa sẽ không có nội dung riêng tư khi chọn. Không cho tự vô hiệu hóa/hạ quyền quản trị hiện tại để giữ khả năng tiếp tục xem thử.
+Preview không có mật khẩu mẫu; đăng nhập thật dùng tài khoản PostgreSQL đã được đặt mật khẩu bởi quản trị viên. Trong preview, form đăng nhập không gửi thông tin và yêu cầu thoát preview trước. Đổi trạng thái công việc, thông báo, người dùng trong preview chỉ lưu trong phiên; không thay đổi máy chủ.
 
 Chọn **Thoát xem thử** để trở về giao diện bình thường. Dữ liệu chỉnh sửa vẫn nằm trong `sessionStorage` của tab và được dùng lại nếu bật preview; đóng tab sẽ kết thúc phiên lưu của trình duyệt. Quản trị có nút **Khôi phục dữ liệu mẫu** để xóa các chỉnh sửa ngay. Việc đổi phòng ban không tự thêm hoặc bỏ phân công dự án.
 
@@ -119,6 +119,40 @@ frontend/
       bootstrap.min.css
       bootstrap.bundle.min.js
       LICENSE
+backend/
+  src/
+    auth/
+      auth-service.js
+      password.js
+      session-store.js
+    cli/set-password.js
+    db/pool.js
+    repositories/
+      account-repository.js
+      announcement-repository.js
+      audit-repository.js
+      admin-user-repository.js
+      department-repository.js
+      directory-repository.js
+      notification-repository.js
+      work-repository.js
+    server.js
+  Dockerfile
+database/
+  init/001_create_app_role.sh
+  migrations/
+    010_schema.sql
+    020_demo_data.sql
+    030_public_directory_job.sql
+    040_auth_sessions.sql
+    050_user_username_ci.sql
+    060_audit_log.sql
+  migrate.js
+  migrator.Dockerfile
+nginx/
+  Dockerfile
+  default.conf
+docker-compose.yml
 docs/
   design-system.md
   ui-specification.md
@@ -127,6 +161,8 @@ docs/
   testing.md
   references/                 # Chưa có tài liệu tham khảo do người dùng cung cấp
 tools/
+  backup-db.sh
+  restore-db.sh
   serve.mjs
   check.mjs
   browser-smoke.mjs
@@ -164,6 +200,6 @@ Nếu Chrome ở vị trí khác, đặt `$env:CHROME_PATH` trước khi chạy.
 
 Bootstrap, font, icon SVG, ảnh đều cục bộ. Nguồn và giấy phép tại [docs/assets.md](docs/assets.md). Tên công ty, logo, ảnh văn phòng/nhân viên, số KPI và toàn bộ nội dung đều minh họa, cần thay bằng tài nguyên doanh nghiệp được duyệt. Chưa có ảnh chụp UI do người dùng cung cấp; thiết kế tuân theo mô tả cụ thể trong yêu cầu và các nguồn tham khảo được ghi trong tài liệu.
 
-Toàn bộ dữ liệu mẫu có thể đọc được trong mã phía trình duyệt. Các điều kiện hiển thị chỉ mô phỏng luồng sử dụng, **không phải bảo mật hoặc phân quyền thật**. Chưa có Backend, Database, Docker, Nginx, Mini VPN, email, upload hoặc lưu dữ liệu máy chủ.
+Website đã có Backend Node.js và PostgreSQL chạy qua Docker Compose. API cung cấp health check, bản tin, thống kê, danh bạ và xác thực phiên (`/api/auth/login`, `/api/auth/logout`, `/api/me`). Trang chủ, Bản tin và danh bạ đọc dữ liệu từ API; chế độ `?demo=1` tiếp tục dùng dữ liệu mẫu cho phần xem thử.
 
-Bước tiếp theo là thay adapter dữ liệu bằng API có xác thực, kiểm tra phân quyền ở máy chủ, sau đó triển khai Database và hạ tầng theo [docs/future-integration.md](docs/future-integration.md). Không có thành phần hạ tầng nào được triển khai trong giai đoạn này.
+Đăng nhập và session đã hoạt động qua HTTPS lab với certificate tự ký. Trang Work, Phòng ban và thông báo cá nhân dùng API có kiểm tra session; API quản trị người dùng chỉ cho ADMIN, hỗ trợ tạo/sửa/kích hoạt/vô hiệu hóa và thu hồi phiên khi vô hiệu hóa. Người dùng có thể tự đổi mật khẩu sau khi xác nhận mật khẩu hiện tại; khởi tạo/đặt lại mật khẩu vẫn do quản trị viên xử lý qua CLI. PostgreSQL ghi lịch sử migration trong `schema_migrations`. Xem cách đặt mật khẩu/TLS trong [docs/docker-deployment.md](docs/docker-deployment.md), cùng kế hoạch còn lại tại [docs/future-integration.md](docs/future-integration.md).
