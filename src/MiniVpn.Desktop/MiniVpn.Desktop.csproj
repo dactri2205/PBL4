@@ -1,1 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup><ItemGroup><ProjectReference Include="../MiniVpn.ClientCore/MiniVpn.ClientCore.csproj"/></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MiniVpn.ClientCore/MiniVpn.ClientCore.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(WintunDllPath)' != ''">
+    <Content Include="$(WintunDllPath)" Link="wintun.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="$(WintunLicensePath)" LogicalName="MiniVpn.Wintun.License.txt" />
+  </ItemGroup>
+  <Target Name="ValidateBundledWintun" BeforeTargets="PrepareForPublish" Condition="'$(PublishSingleFile)' == 'true'">
+    <Error Condition="!Exists('$(WintunDllPath)')" Text="Supply the official x64 Wintun DLL using scripts/Publish-Client.ps1." />
+    <Error Condition="!Exists('$(WintunLicensePath)')" Text="Supply the original Wintun license for inclusion in the executable." />
+  </Target>
+</Project>

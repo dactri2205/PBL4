@@ -73,3 +73,24 @@ Ngắt VPN rồi thử lại URL này; trang phải không còn tải được. 
 | B đã ngắt VPN | Liên lạc được | Không truy cập được | Không tải được trang |
 
 Khi tích hợp API và database, giữ backend chỉ lắng nghe ở `127.0.0.1:18080` hoặc publish Docker vào đúng địa chỉ đó; không bind trực tiếp website ra IP LAN A.
+
+## Website Ubuntu qua VPN tới mạng VMnet8
+
+Bản cấu hình này chỉ cho client truy cập `192.168.238.69:18443` qua VPN; không mở toàn bộ mạng VMnet8 và không mở PostgreSQL. Nếu website có IP/cổng khác, sửa `WebTargetAddress` và `WebTargetPort` trong `src/MiniVpn.Common/Protocol.cs`, sau đó publish/cập nhật cả VPN server lẫn client.
+
+Trên máy Windows đang chạy VPN server (PowerShell Administrator), bật IPv4 forwarding trên adapter Wintun của server và adapter VMware nối tới Ubuntu:
+
+```powershell
+Set-NetIPInterface -InterfaceAlias 'MiniVpn-Server' -AddressFamily IPv4 -Forwarding Enabled
+Set-NetIPInterface -InterfaceAlias 'VMware Network Adapter VMnet8' -AddressFamily IPv4 -Forwarding Enabled
+Get-NetIPInterface -AddressFamily IPv4 | Where-Object InterfaceAlias -in @('MiniVpn-Server','VMware Network Adapter VMnet8') | Select-Object InterfaceAlias,Forwarding
+```
+
+Đảm bảo firewall Windows cho phép forward TCP từ `10.8.0.0/24` tới `192.168.238.69:18443`, và Ubuntu cho phép TCP/18443 từ dải VPN. Ubuntu cần route trả về:
+
+```bash
+sudo ip route add 10.8.0.0/24 via 192.168.238.1
+ip route get 10.8.0.2
+```
+
+Sau khi kết nối VPN, thay `10.8.0.2` bằng IP client được cấp rồi thử `curl -k https://192.168.238.69:18443/api/health` hoặc mở `https://192.168.238.69:18443/`. Route Ubuntu bằng `ip route add` mất sau reboot; lưu qua Netplan sau khi kiểm thử thành công.

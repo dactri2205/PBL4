@@ -5,7 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="../../web/frontend/**/*"
+    <ProjectReference Include="../MiniVpn.Management/MiniVpn.Management.csproj" />
+    <Content Include="../../webnew/frontend/**/*"
              Link="wwwroot/%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />

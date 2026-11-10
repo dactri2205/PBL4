@@ -1,1 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup><ItemGroup><ProjectReference Include="../MiniVpn.Common/MiniVpn.Common.csproj"/><ProjectReference Include="../MiniVpn.Wintun/MiniVpn.Wintun.csproj"/></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup><TargetFramework>net10.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MiniVpn.Common/MiniVpn.Common.csproj" />
+    <ProjectReference Include="../MiniVpn.Wintun/MiniVpn.Wintun.csproj" />
+    <ProjectReference Include="../MiniVpn.Management/MiniVpn.Management.csproj" />
+  </ItemGroup>
+</Project>

@@ -34,12 +34,19 @@ public static class VpnConnection
             try { await tcp.ConnectAsync(serverIp, options.Port, timeout.Token); }
             catch (OperationCanceledException) when (!stop.IsCancellationRequested) { throw new TimeoutException("Máy chủ VPN không phản hồi trong 15 giây."); }
         }
+        string? certificateRejection = null;
         using var tls = new SslStream(tcp.GetStream(), false, (_, cert, _, _) =>
         {
-            if (cert is null) return false;
+            if (cert is null) { certificateRejection = "Máy chủ không cung cấp chứng chỉ TLS."; return false; }
             using var x = new X509Certificate2(cert);
-            return x.NotBefore <= DateTime.UtcNow && x.NotAfter >= DateTime.UtcNow &&
-                CryptographicOperations.FixedTimeEquals(pinnedHash, x.GetCertHash(HashAlgorithmName.SHA256));
+            var nowUtc = DateTime.UtcNow;
+            if (x.NotAfter.ToUniversalTime() < nowUtc)
+            { certificateRejection = $"Chứng chỉ VPN đã hết hạn lúc {x.NotAfter:yyyy-MM-dd HH:mm:ss zzz}. Quản trị viên cần dùng chứng chỉ còn hạn."; return false; }
+            if (x.NotBefore.ToUniversalTime() > nowUtc)
+            { certificateRejection = "Chứng chỉ VPN chưa có hiệu lực. Kiểm tra ngày giờ máy A/B và thời hạn chứng chỉ."; return false; }
+            if (!CryptographicOperations.FixedTimeEquals(pinnedHash, x.GetCertHash(HashAlgorithmName.SHA256)))
+            { certificateRejection = "Fingerprint SHA256 không khớp chứng chỉ VPN mà máy chủ đang dùng. Lấy lại fingerprint từ máy A qua kênh tin cậy."; return false; }
+            return true;
         });
         using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop))
         {
@@ -52,6 +59,8 @@ public static class VpnConnection
                     CertificateRevocationCheckMode = X509RevocationMode.NoCheck
                 }, timeout.Token);
             }
+            catch (AuthenticationException ex) when (certificateRejection is not null)
+            { throw new AuthenticationException(certificateRejection, ex); }
             catch (OperationCanceledException) when (!stop.IsCancellationRequested) { throw new TimeoutException("Bắt tay TLS không hoàn tất trong 15 giây."); }
         }
         report(new("TLS đã xác thực; đang đăng nhập VPN…"));
@@ -65,7 +74,7 @@ public static class VpnConnection
 
         report(new("Đã đăng nhập; đang tạo Wintun và route…"));
         using var tun = new Tun("MiniVpn-Client-" + options.User);
-        try { await NetConfig.ConfigureAsync(tun.InterfaceIndex, address, server: false); }
+        try { await NetConfig.ConfigureAsync(tun.InterfaceIndex, address, server: false, webTargetAddress: IpPolicy.WebTargetAddress); }
         catch { try { await NetConfig.CleanupAsync(tun.InterfaceIndex, address); } catch { } throw; }
         try
         {
@@ -77,7 +86,7 @@ public static class VpnConnection
                 {
                     byte[]? packet = tun.Receive(linked.Token);
                     if (packet is null) break;
-                    if (IpPolicy.IsAllowed(packet, IpPolicy.Ip(address), IpPolicy.Ip("10.8.0.1"), reply: false))
+                    if (IpPolicy.IsAllowed(packet, IpPolicy.Ip(address), IpPolicy.Ip("10.8.0.1"), reply: false, webTarget: IpPolicy.Ip(IpPolicy.WebTargetAddress)))
                         await Protocol.WriteAsync(tls, FrameType.Packet, packet, linked.Token);
                 }
             }, linked.Token);
@@ -86,7 +95,7 @@ public static class VpnConnection
                 while (!linked.IsCancellationRequested)
                 {
                     Frame frame = await Protocol.ReadAsync(tls, linked.Token);
-                    if (frame.Type != FrameType.Packet || !IpPolicy.IsAllowed(frame.Data, IpPolicy.Ip("10.8.0.1"), IpPolicy.Ip(address), reply: true))
+                    if (frame.Type != FrameType.Packet || !IpPolicy.IsAllowed(frame.Data, IpPolicy.Ip("10.8.0.1"), IpPolicy.Ip(address), reply: true, webTarget: IpPolicy.Ip(IpPolicy.WebTargetAddress)))
                         throw new InvalidDataException("Gói tin từ máy chủ bị từ chối.");
                     tun.Send(frame.Data);
                 }

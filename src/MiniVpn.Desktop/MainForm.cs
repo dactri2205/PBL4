@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.ComponentModel;
+using System.Diagnostics;
+using MiniVpn.Common;
 using MiniVpn.ClientCore;
 
 namespace MiniVpn.Desktop;
@@ -16,12 +18,16 @@ public sealed class MainForm : Form
     private readonly Button connectButton = new();
     private readonly Button disconnectButton = new();
     private readonly Button testButton = new();
+    private readonly Button openWebsiteButton = new() { Name = "openWebsiteButton" };
+    private readonly CheckBox autoOpenWebsite = new();
+    private readonly CheckBox httpDemoWebsite = new();
     private readonly Label statusLabel = new();
     private readonly Label addressLabel = new();
     private readonly ListBox logBox = new();
     private CancellationTokenSource? connectionStop;
     private bool connecting;
     private bool closeRequested;
+    private bool websiteOpenedForConnection;
 
     private static readonly Color Ink = Color.FromArgb(21, 36, 58);
     private static readonly Color Accent = Color.FromArgb(37, 102, 230);
@@ -33,13 +39,13 @@ public sealed class MainForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
-        ClientSize = new Size(620, 750);
+        ClientSize = new Size(620, 835);
         MinimumSize = Size;
         BackColor = Color.FromArgb(245, 248, 253);
         ForeColor = Ink;
         Font = new Font("Segoe UI", 10);
 
-        var heading = NewLabel("Mini VPN", 24, 18, 560, 42, 22, true, Ink);
+        var heading = NewLabel("Mini VPN", 24, 18, 400, 42, 22, true, Ink);
         var subtitle = NewLabel("Kết nối an toàn tới mạng nội bộ qua Wintun và TLS", 24, 61, 560, 28, 10, false, Muted);
         Controls.Add(heading); Controls.Add(subtitle);
 
@@ -76,12 +82,29 @@ public sealed class MainForm : Form
         Controls.Add(addressLabel);
 
         testButton.Text = "Thử kết nối 10.8.0.1:8080";
-        testButton.SetBounds(20, 620, 580, 36);
+        testButton.SetBounds(320, 620, 280, 36);
         testButton.Enabled = false;
         testButton.Click += async (_, _) => await TestTunnelAsync();
         Controls.Add(testButton);
 
-        logBox.SetBounds(20, 669, 580, 63);
+        openWebsiteButton.Text = "Mở website nội bộ";
+        openWebsiteButton.SetBounds(20, 620, 280, 36);
+        openWebsiteButton.Enabled = false;
+        openWebsiteButton.Click += (_, _) => OpenWebsite();
+        Controls.Add(openWebsiteButton);
+        autoOpenWebsite.Text = "Tự mở website sau khi VPN kết nối";
+        autoOpenWebsite.SetBounds(24, 668, 560, 26);
+        autoOpenWebsite.Checked = true;
+        Controls.Add(autoOpenWebsite);
+        httpDemoWebsite.Text = "Website dùng HTTP (chỉ khi server cấu hình demo HTTP)";
+        httpDemoWebsite.SetBounds(24, 698, 570, 26);
+        Controls.Add(httpDemoWebsite);
+
+        var licenseButton = new Button { Text = "Giấy phép Wintun", Left = 450, Top = 24, Width = 150, Height = 30, Enabled = PackageDiagnostics.WintunLicense() is not null };
+        licenseButton.Click += (_, _) => ShowWintunLicense();
+        Controls.Add(licenseButton);
+
+        logBox.SetBounds(20, 739, 580, 78);
         logBox.BackColor = Color.White; logBox.BorderStyle = BorderStyle.FixedSingle;
         logBox.HorizontalScrollbar = true;
         Controls.Add(logBox);
@@ -110,8 +133,9 @@ public sealed class MainForm : Form
         var options = new VpnOptions(serverBox.Text.Trim(), port, userBox.Text.Trim(), password, pinBox.Text.Trim());
         connectionStop = new CancellationTokenSource();
         connecting = true;
+        websiteOpenedForConnection = false;
         bool failed = false;
-        connectButton.Enabled = false; disconnectButton.Enabled = true; testButton.Enabled = false;
+        connectButton.Enabled = false; disconnectButton.Enabled = true; testButton.Enabled = false; openWebsiteButton.Enabled = false;
         SetState(new("Đang kết nối…"));
         try
         {
@@ -122,8 +146,8 @@ public sealed class MainForm : Form
             }, connectionStop.Token));
         }
         catch (OperationCanceledException) { WriteLog("Đã ngắt VPN."); }
-        catch (AuthenticationException) { failed = true; ShowError("Chứng chỉ máy chủ không khớp fingerprint hoặc TLS bị từ chối."); }
-        catch (DllNotFoundException) { failed = true; ShowError("Thiếu wintun.dll cạnh MiniVpn.Desktop.exe."); }
+        catch (AuthenticationException ex) { failed = true; ShowError("Không xác thực được TLS: " + ex.Message); }
+        catch (DllNotFoundException) { failed = true; ShowError("Không tải được Wintun. Dùng bản EXE đã đóng gói, hoặc đặt DLL x64 chính thức cạnh EXE khi chạy bản build thường."); }
         catch (Win32Exception ex) { failed = true; ShowError("Wintun/Windows báo lỗi: " + ex.Message + ". Hãy kiểm tra quyền Administrator."); }
         catch (UnauthorizedAccessException ex) { failed = true; ShowError(ex.Message); }
         catch (Exception ex) { failed = true; ShowError(ex.Message); }
@@ -131,7 +155,7 @@ public sealed class MainForm : Form
         {
             connectionStop.Dispose(); connectionStop = null;
             connecting = false;
-            connectButton.Enabled = true; disconnectButton.Enabled = false; testButton.Enabled = false;
+            connectButton.Enabled = true; disconnectButton.Enabled = false; testButton.Enabled = false; openWebsiteButton.Enabled = false;
             if (!failed) { statusLabel.Text = "●  Chưa kết nối"; statusLabel.ForeColor = Muted; }
             addressLabel.Text = "IP VPN: —";
             if (closeRequested) Close();
@@ -144,7 +168,33 @@ public sealed class MainForm : Form
         statusLabel.ForeColor = state.Address is null ? Accent : Color.FromArgb(18, 137, 79);
         addressLabel.Text = state.Address is null ? "IP VPN: —" : "IP VPN: " + state.Address;
         testButton.Enabled = state.Address is not null;
+        openWebsiteButton.Enabled = state.Address is not null;
         WriteLog(state.Message);
+        if (state.Address is not null && autoOpenWebsite.Checked && !websiteOpenedForConnection && connectionStop?.IsCancellationRequested == false)
+        {
+            websiteOpenedForConnection = true;
+            OpenWebsite();
+        }
+    }
+
+    private void OpenWebsite()
+    {
+        if (!openWebsiteButton.Enabled) return;
+        var address = httpDemoWebsite.Checked ? $"http://{IpPolicy.WebTargetAddress}:{IpPolicy.WebTargetPort}/" : $"https://{IpPolicy.WebTargetAddress}:{IpPolicy.WebTargetPort}/";
+        try
+        {
+            using var browser = Process.Start(new ProcessStartInfo(address) { UseShellExecute = true });
+            WriteLog("Đã yêu cầu trình duyệt mở " + address);
+        }
+        catch (Exception) { WriteLog("Chưa mở được trình duyệt. Bạn có thể mở thủ công " + address); }
+    }
+
+    private void ShowWintunLicense()
+    {
+        using var dialog = new Form { Text = "Giấy phép Wintun", StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(700, 500) };
+        dialog.Controls.Add(new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical,
+            Text = PackageDiagnostics.WintunLicense() ?? "Chưa kèm giấy phép Wintun trong bản build này.", Font = new Font("Consolas", 10) });
+        dialog.ShowDialog(this);
     }
 
     private async Task TestTunnelAsync()
@@ -154,10 +204,10 @@ public sealed class MainForm : Form
         {
             using var client = new TcpClient(AddressFamily.InterNetwork);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            await client.ConnectAsync(IPAddress.Parse("10.8.0.1"), 8080, timeout.Token);
-            WriteLog("Thành công: đã mở TCP tới 10.8.0.1:8080 qua VPN.");
+            await client.ConnectAsync(IPAddress.Parse(IpPolicy.WebTargetAddress), IpPolicy.WebTargetPort, timeout.Token);
+            WriteLog("Thành công: đã mở TCP tới website Ubuntu qua VPN.");
         }
-        catch (Exception ex) { WriteLog("Chưa tới được 10.8.0.1:8080: " + ex.Message); }
+        catch (Exception ex) { WriteLog("Chưa tới được website Ubuntu: " + ex.Message); }
         finally { testButton.Enabled = connecting && addressLabel.Text != "IP VPN: —"; }
     }
 
