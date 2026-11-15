@@ -100,6 +100,7 @@ public sealed class TunnelServer(TunnelOptions options, ITunnelDevice device, Vp
         var reason = "client-closed";
         using (tcp)
         {
+            tcp.NoDelay = true;
             try
             {
                 using var tls = new SslStream(tcp.GetStream());

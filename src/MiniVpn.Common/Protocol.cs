@@ -19,11 +19,12 @@ public static class Protocol
     public static async Task WriteAsync(Stream stream, FrameType type, ReadOnlyMemory<byte> data, CancellationToken ct)
     {
         if (data.Length > MaxPayload) throw new InvalidDataException("Frame too large");
-        byte[] header = new byte[6];
-        header[0] = Version; header[1] = (byte)type;
-        BinaryPrimitives.WriteInt32BigEndian(header.AsSpan(2), data.Length);
-        await stream.WriteAsync(header, ct);
-        await stream.WriteAsync(data, ct);
+        // One write per frame avoids sending a 6-byte header as its own TLS record/TCP segment.
+        byte[] frame = new byte[6 + data.Length];
+        frame[0] = Version; frame[1] = (byte)type;
+        BinaryPrimitives.WriteInt32BigEndian(frame.AsSpan(2), data.Length);
+        data.Span.CopyTo(frame.AsSpan(6));
+        await stream.WriteAsync(frame, ct);
         await stream.FlushAsync(ct);
     }
     public static async Task<Frame> ReadAsync(Stream stream, CancellationToken ct)

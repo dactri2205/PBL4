@@ -47,8 +47,9 @@ public sealed class WebRelay(IVpnSessionManager sessions) : IVpnWebRelay, IDispo
     private async Task RelayAsync(TcpClient client)
     {
         using (client)
-        using (var backend = new TcpClient(AddressFamily.InterNetwork))
+        using (var backend = new TcpClient(AddressFamily.InterNetwork) { NoDelay = true })
         {
+            client.NoDelay = true;
             var ip = ((IPEndPoint)client.Client.RemoteEndPoint!).Address;
             var session = ip.GetAddressBytes() is [10, 8, 0, >= 2 and <= 254] ? sessions.FindByIp(ip.ToString()) : null;
             if (session is null || !session.AttachRelay(client, backend)) return;

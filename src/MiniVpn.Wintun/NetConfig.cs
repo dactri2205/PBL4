@@ -11,7 +11,9 @@ public static class NetConfig
             (server && address != "10.8.0.1") || (!server && (!address.StartsWith("10.8.0.") || ip.GetAddressBytes()[3] is < 2 or > 254)))
             throw new ArgumentException("Invalid VPN address");
         string prefix = server ? "24" : "32";
-        string script = $"$ErrorActionPreference='Stop'; New-NetIPAddress -InterfaceIndex {index} -IPAddress {address} -PrefixLength {prefix} -PolicyStore ActiveStore | Out-Null; " +
+        // Wintun defaults to MTU 65535, but the tunnel drops packets over 1500 bytes. A lower MTU makes both
+        // ends negotiate a small TCP MSS (~1360) so large HTTP responses are not silently dropped.
+        string script = $"$ErrorActionPreference='Stop'; Set-NetIPInterface -InterfaceIndex {index} -AddressFamily IPv4 -NlMtuBytes 1400 -PolicyStore ActiveStore | Out-Null; New-NetIPAddress -InterfaceIndex {index} -IPAddress {address} -PrefixLength {prefix} -PolicyStore ActiveStore | Out-Null; " +
             (server ? "" : $"New-NetRoute -DestinationPrefix '10.8.0.1/32' -InterfaceIndex {index} -NextHop '0.0.0.0' -PolicyStore ActiveStore | Out-Null;");
         await RunAsync(script);
     }

@@ -27,7 +27,7 @@ public static class VpnConnection
         byte[] pinnedHash = Convert.FromHexString(pin);
 
         report(new("Đang kết nối TLS…"));
-        using var tcp = new TcpClient(AddressFamily.InterNetwork);
+        using var tcp = new TcpClient(AddressFamily.InterNetwork) { NoDelay = true };
         using (var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop))
         {
             timeout.CancelAfter(TimeSpan.FromSeconds(15));
