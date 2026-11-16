@@ -41,7 +41,7 @@ for (const file of files) {
     if (remoteRuntime) failures.push(`${file}: remote runtime dependency`);
   }
 }
-for (const page of ["index", "login", "news", "department", "work", "admin"])
+for (const page of ["index", "login", "news", "department", "work", "admin", "vpn-admin"])
   if (!existsSync(`frontend/${page}.html`))
     failures.push(`Missing page ${page}`);
 if (failures.length) {
@@ -49,5 +49,5 @@ if (failures.length) {
   process.exitCode = 1;
 } else
   console.log(
-    `PASS: ${files.length} frontend files checked; JS syntax, local references, six pages and no remote runtime dependencies.`,
+    `PASS: ${files.length} frontend files checked; JS syntax, local references, seven pages and no remote runtime dependencies.`,
   );

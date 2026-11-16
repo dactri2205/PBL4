@@ -2,7 +2,10 @@ const key = "preview-user";
 const enabledKey = "preview-enabled";
 const query = new URLSearchParams(location.search);
 try {
-  if (query.get("demo") === "1") sessionStorage.setItem(enabledKey, "1");
+  if (query.get("real") === "1") {
+    sessionStorage.removeItem(enabledKey);
+    sessionStorage.removeItem(key);
+  } else if (query.get("demo") === "1") sessionStorage.setItem(enabledKey, "1");
 } catch {}
 export function isPreview() {
   try {

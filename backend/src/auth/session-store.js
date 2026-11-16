@@ -7,15 +7,27 @@ function tokenHash(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export async function createSession(userId) {
+export async function createSession(userId, authVersion) {
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + sessionLifetimeSeconds * 1000);
   await pool.query("DELETE FROM auth_sessions WHERE expires_at <= now()");
-  await pool.query(
-    "INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)",
-    [tokenHash(token), userId, expiresAt],
-  );
-  return { token, expiresAt };
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const current = await client.query(
+      "SELECT id FROM users WHERE id = $1 AND status = 'Active' AND auth_version = $2 FOR UPDATE",
+      [userId, authVersion],
+    );
+    if (!current.rowCount) { await client.query("ROLLBACK"); return null; }
+    await client.query(
+      "INSERT INTO auth_sessions (token_hash, user_id, expires_at, auth_version) VALUES ($1, $2, $3, $4)",
+      [tokenHash(token), userId, expiresAt, authVersion],
+    );
+    await client.query("COMMIT");
+    return { token, expiresAt };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {}); throw error;
+  } finally { client.release(); }
 }
 
 export async function getSessionUser(token) {
@@ -30,10 +42,11 @@ export async function getSessionUser(token) {
        AND s.user_id = u.id
        AND s.expires_at > now()
        AND u.status = 'Active'
+       AND s.auth_version = u.auth_version
      RETURNING u.id, u.name, u.username, u.role, u.photo_key AS photo,
                u.department_id AS "departmentId",
                d.name AS "departmentName",
-               u.job_title AS job`,
+               u.job_title AS job, s.expires_at AS "sessionExpiresAt"`,
     [hash],
   );
   return result.rows[0] || null;

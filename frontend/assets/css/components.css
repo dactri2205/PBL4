@@ -458,6 +458,41 @@
 .dialog::backdrop {
   background: #05080c65;
 }
+/* The three-field password form needs no reserved empty feedback space. */
+.dialog:has(#password-change-form) {
+  width: min(520px, calc(100vw - 32px));
+}
+.dialog:has(#password-change-form) .dialog-header {
+  padding: 16px 20px;
+}
+.dialog:has(#password-change-form) .dialog-body {
+  padding: 18px 20px;
+}
+#password-change-form .field {
+  gap: 5px;
+  margin-bottom: 12px;
+}
+#password-change-form .input {
+  padding: 9px 12px;
+}
+#password-change-form .notice {
+  padding: 10px 12px;
+  margin-bottom: 0;
+}
+#password-change-feedback {
+  min-height: 0;
+  padding: 0;
+  margin: 10px 0 0;
+}
+#password-change-feedback:empty {
+  margin: 0;
+}
+#password-change-form .dialog-actions {
+  margin-top: 16px;
+}
+#password-change-form .primary-button {
+  padding: 11px 22px;
+}
 .dialog-wide {
   width: min(1120px, calc(100vw - 64px));
 }
@@ -598,6 +633,102 @@
 .department-card-bottom .text-link {
   font-size: inherit;
 }
+/* Compact company directory; carousel arrows replace the horizontal scrollbar. */
+.directory-dialog .dialog-header {
+  padding: 14px 20px;
+}
+.directory-dialog .dialog-body {
+  padding: 14px 20px;
+}
+.directory-dialog .dialog-body > p:first-of-type {
+  margin-bottom: 8px;
+}
+.directory-dialog .directory-search {
+  margin-bottom: 8px;
+}
+.directory-dialog .directory-search .input {
+  padding-block: 9px;
+}
+.directory-dialog .result-count {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding-right: 100px;
+  margin: 6px 0;
+}
+.directory-dialog .card-carousel {
+  position: relative;
+  margin-top: 0;
+}
+.directory-dialog .card-carousel .section-head {
+  position: absolute;
+  right: 0;
+  top: -44px;
+  margin: 0;
+}
+.directory-dialog .card-carousel .section-head > div:first-child {
+  display: none;
+}
+.directory-dialog .carousel-track {
+  scrollbar-width: none;
+}
+.directory-dialog .carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.directory-dialog .member-card-inner {
+  height: clamp(190px, 32dvh, 270px);
+}
+.directory-dialog .member-caption {
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+}
+.directory-dialog .member-department {
+  margin-top: 4px;
+}
+.directory-dialog .directory-back {
+  margin-bottom: 8px;
+}
+.directory-dialog .directory-results {
+  margin-top: 12px;
+}
+.directory-dialog .directory-results > h3 {
+  margin-bottom: 12px;
+}
+.directory-dialog .directory-results:has(> .directory-member-grid) > h3 {
+  display: none;
+}
+.directory-dialog .directory-member-grid {
+  gap: 12px;
+}
+.directory-dialog .directory-person {
+  padding: 12px;
+  gap: 10px;
+}
+.directory-dialog .directory-portrait {
+  width: 48px;
+  height: 60px;
+}
+.directory-dialog .directory-person h4 {
+  margin-bottom: 4px;
+}
+.directory-dialog .directory-person p {
+  margin-bottom: 4px;
+}
+.directory-dialog .department-card {
+  min-height: 0;
+  padding: 18px 20px;
+}
+.directory-dialog .department-card h3 {
+  margin: 14px 0 8px;
+}
+.directory-dialog .department-card p {
+  margin: 0;
+}
+.directory-dialog .department-card-bottom {
+  margin-top: 0;
+  padding-top: 12px;
+}
 .dialog[open] {
   animation: dialog-enter 220ms ease-out;
 }
@@ -625,6 +756,45 @@
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+}
+/* Opt-in layout for the account editor and task drawer only. */
+.dialog-scroll[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dialog-scroll .dialog-header {
+  flex-shrink: 0;
+}
+.dialog-scroll .dialog-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin: 0;
+}
+.dialog-scroll-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+.dialog-scroll .dialog-actions {
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 .task-drawer {
   position: fixed;

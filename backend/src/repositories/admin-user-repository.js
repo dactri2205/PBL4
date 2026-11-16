@@ -126,6 +126,7 @@ export async function updateAdminUser(actor, userId, changes) {
     const result = await client.query(
       `UPDATE users
           SET name = $2, role = $3, department_id = $4, status = $5,
+              auth_version = auth_version + CASE WHEN role IS DISTINCT FROM $3 OR status IS DISTINCT FROM $5 THEN 1 ELSE 0 END,
               updated_at = now()
         WHERE id = $1
         RETURNING ${returningUser}`,
@@ -150,7 +151,7 @@ export async function updateAdminUser(actor, userId, changes) {
         entityId: userId,
         details: { changes: changedFields },
       });
-    if (changes.status === "Disabled")
+    if (changes.status === "Disabled" || target.role !== changes.role)
       await client.query("DELETE FROM auth_sessions WHERE user_id = $1", [userId]);
     await client.query("COMMIT");
     return result.rows[0];

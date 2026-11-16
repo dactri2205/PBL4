@@ -1,6 +1,6 @@
 FROM node:22-alpine
 
-ENV NODE_ENV=production PORT=3000
+ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 WORKDIR /app
 
 COPY --chown=node:node package.json package-lock.json ./

@@ -1,9 +1,12 @@
 import { esc, icon } from "../core/ui.js";
 import { api } from "../core/data-source.js";
 import { isPreview } from "../core/demo-session.js";
+import { loginReturnTarget } from "../core/login-return.js";
 export async function render(root, user) {
+  const destination = loginReturnTarget(location.search);
   root.className = "login-page";
   if (user) {
+    if (!isPreview() && destination !== "index.html") { location.replace(destination); return; }
     root.innerHTML = `<section class="login-card" aria-labelledby="login-heading"><div class="login-symbol">${icon("lock")}</div><h1 id="login-heading">Bạn đã đăng nhập</h1><p class="login-intro">Xin chào ${esc(user.name)}.</p><a class="primary-button" href="index.html">Về trang chủ ${icon("arrow")}</a></section>`;
     return;
   }
@@ -41,8 +44,9 @@ export async function render(root, user) {
     submit.textContent = "Đang đăng nhập…";
     try {
       await api.login(root.querySelector("#username").value.trim(), password.value);
-      feedback.textContent = "Đăng nhập thành công. Đang chuyển về trang chủ…";
-      location.href = "index.html";
+      feedback.textContent = "Đăng nhập thành công. Đang chuyển trang…";
+      password.value = "";
+      location.href = destination;
     } catch (error) {
       feedback.textContent = error.message || "Không thể đăng nhập. Vui lòng thử lại.";
       password.value = "";

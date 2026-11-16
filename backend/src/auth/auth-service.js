@@ -6,7 +6,7 @@ const dummyHash = await hashPassword(randomBytes(32).toString("hex"));
 
 export async function authenticateUser(username, password) {
   const result = await pool.query(
-    `SELECT id, password_hash, status
+    `SELECT id, password_hash, status, auth_version AS "authVersion"
        FROM users
       WHERE lower(username) = lower($1)
       LIMIT 1`,

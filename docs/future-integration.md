@@ -2,7 +2,7 @@
 
 ## Hiện trạng
 
-Dự án có Node.js API, PostgreSQL và Nginx trong Docker Compose. API có health, bản tin, thống kê, danh bạ, xác thực, API phòng ban/dự án/công việc, thông báo cá nhân và quản trị người dùng có session. Các trang dùng API khi preview không bật. Preview `?demo=1` tiếp tục dùng mock data. Máy chủ `tools/serve.mjs` chỉ phục vụ frontend và không proxy API.
+Dự án đã hợp nhất website và quản trị VPN. Gateway .NET phục vụ frontend tại loopback 18080, API nghiệp vụ Node.js/PostgreSQL tại loopback 13000 và control API trong MiniVPN tại loopback 18181. Nginx là profile standalone riêng ở 18443. Xem [hướng dẫn tích hợp](integrated-deployment.md). Preview `?demo=1` tiếp tục dùng mock data cho nghiệp vụ, không cấp quyền VPN. Máy chủ `tools/serve.mjs` chỉ phục vụ frontend và không proxy API.
 
 ## Adapter Backend
 
@@ -14,7 +14,7 @@ Hợp đồng bản tin trả `{ data: [...] }`; thống kê trả `{ data: { me
 
 Đã có `POST /api/auth/login`, `POST /api/auth/logout` và `GET /api/me`. Password hash dùng Node scrypt; phiên ngẫu nhiên được lưu dưới dạng SHA-256 verifier trong PostgreSQL, cookie HttpOnly/SameSite=Lax hết hạn sau 8 giờ. Login có giới hạn 5 lần sai mỗi username trong 15 phút. Mọi endpoint thay đổi dữ liệu yêu cầu Origin khớp chính xác scheme và host hiện tại; request thiếu Origin hoặc khác origin bị từ chối. Đặt mật khẩu tài khoản bằng CLI tương tác, không có mật khẩu mẫu.
 
-Compose publish HTTPS trên loopback `127.0.0.1:18080`; Mini VPN relay chuyển tiếp qua `10.8.0.1:8080`. TLS website lab dùng certificate tự ký và `COOKIE_SECURE=true`. API Work lấy identity từ session server-side; nhân viên chỉ xem dự án là thành viên và công việc được giao; ADMIN có quyền xem rộng tại server. API phòng ban, thông báo và quản trị cũng kiểm tra session/quyền ở backend. Vô hiệu hóa tài khoản thu hồi session; đổi mật khẩu yêu cầu mật khẩu hiện tại và thu hồi các session cũ. Audit log ghi cùng transaction cho các thay đổi quản trị, trạng thái công việc và mật khẩu, không lưu mật khẩu. Việc còn lại là kiểm tra các luồng quyền bằng tài khoản thật và xác nhận sao lưu database.
+Gateway .NET giữ cổng loopback `127.0.0.1:18080`; MiniVPN relay chuyển tiếp qua `10.8.0.1:8080`. HTTPS/cookie Secure dùng theo hướng dẫn tích hợp; chỉ cho HTTP bằng Development config rõ ràng. ADMIN thật của website được gateway xác minh trên mỗi request để cấp quyền VPN, EMPLOYEE/preview không được phép. Migration 070 bổ sung auth_version, chống race đăng nhập sau reset/khóa/đổi quyền. Audit nghiệp vụ vẫn trong PostgreSQL, audit VPN ở kho JSONL riêng. Các luồng đăng nhập/phân quyền/thu hồi đã có kiểm thử Node/PostgreSQL thật và gateway HTTPS; kiểm chứng hai laptop/Wintun cùng xác nhận backup/restore vận hành vẫn cần làm thực tế.
 
 Role khác Department và khác ProjectMembership. Ví dụ Minh và Linh cùng IT nhưng chỉ Minh trong Alpha, Linh trong Beta. Máy chủ phải kiểm tra identity, role, department, membership và TaskAssignee trên từng thao tác; không tin ID/role client gửi lên. ADMIN có quyền rộng theo chính sách máy chủ được duyệt. Thu hồi/disable tài khoản cần thu hồi phiên thật và audit log. `demo-session.js` và các kiểm tra hiển thị hiện tại không đáp ứng những yêu cầu bảo mật này.
 

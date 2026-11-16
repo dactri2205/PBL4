@@ -1,5 +1,13 @@
 # Kết quả kiểm tra
 
+## Bản ghép website và MiniVPN
+
+Kiểm tra tĩnh hiện bao gồm 7 trang, adapter VPN và đường dẫn đăng nhập nội bộ. `npm.cmd test` chạy test dữ liệu mẫu, adapter HTTP VPN và allowlist returnTo. Bộ .NET có kiểm thử runtime VPN và tùy chọn `MINIVPN_FULL_STACK_TEST=1` để chạy PostgreSQL 17 riêng, migrations hai lần, Node.js API thật và gateway HTTPS; `MINIVPN_BROWSER_TEST=1` chạy Chrome pin chứng chỉ thử nghiệm riêng.
+
+Đã kiểm tra ADMIN/EMPLOYEE, CSRF, Secure/HttpOnly cookie, giả role/preview không vượt quyền, hết hạn/khóa/đổi role/reset/logout, race đăng nhập/thu hồi, API nghiệp vụ, CRUD tài khoản VPN, đóng TLS session thật và log/metrics/alerts. Browser kiểm tra đăng nhập website một lần, chuyển tới dashboard, các trang nghiệp vụ, thao tác VPN, XSS notes, responsive laptop/tablet và logout dùng chung. Artifact tại `.qa/vpn-browser/`.
+
+Các kết quả frontend lịch sử phía dưới chỉ mô tả giai đoạn trước khi có backend. Chúng không thay bộ kiểm thử tích hợp mới. Test tự động vẫn thay Wintun và listener IP relay bằng test doubles; chưa chứng minh routing/firewall trên hai laptop thật. Hướng dẫn chạy ở [integrated-deployment.md](integrated-deployment.md).
+
 Thực hiện bằng Node.js và Chrome headless cài sẵn trên Windows trong workspace. Browser automation là công cụ kiểm tra riêng trong `.qa/`, không phải dependency của ứng dụng.
 
 ## Kiểm tra tĩnh và dữ liệu

@@ -93,14 +93,14 @@ function originIsAllowed(req) {
 async function readJson(req) {
   if (!String(req.headers["content-type"] || "").startsWith("application/json"))
     throw new HttpError(415, "Yêu cầu phải dùng JSON.");
-  let body = "";
+  const chunks = []; let size = 0;
   for await (const chunk of req) {
-    body += chunk;
-    if (Buffer.byteLength(body, "utf8") > 16 * 1024)
+    chunks.push(chunk); size += chunk.length;
+    if (size > 16 * 1024)
       throw new HttpError(413, "Nội dung yêu cầu quá lớn.");
   }
   try {
-    const value = JSON.parse(body);
+    const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
     if (!value || typeof value !== "object" || Array.isArray(value)) throw 0;
     return value;
   } catch {
@@ -187,8 +187,13 @@ const server = createServer(async (req, res) => {
       }
 
       await deleteSession(getSessionToken(req));
-      const session = await createSession(user.id);
-      const authenticatedUser = await getSessionUser(session.token);
+      const session = await createSession(user.id, user.authVersion);
+      const authenticatedUser = session ? await getSessionUser(session.token) : null;
+      if (!session || !authenticatedUser) {
+        if (session) await deleteSession(session.token);
+        sendJson(res, 401, { error: "Phiên không còn hợp lệ. Vui lòng đăng nhập lại." });
+        return;
+      }
       res.setHeader(
         "Set-Cookie",
         sessionCookie(session.token, sessionLifetimeSeconds),
@@ -557,8 +562,8 @@ const server = createServer(async (req, res) => {
   sendJson(res, 404, { error: "Không tìm thấy tài nguyên." });
 });
 
-server.listen(port, "0.0.0.0", () => {
-  console.log(`An Việt API listening on port ${port}`);
+server.listen(port, process.env.HOST || "127.0.0.1", () => {
+  console.log(`An Viet API listening on port ${server.address().port}`);
 });
 
 let shuttingDown = false;
@@ -576,3 +581,4 @@ async function shutdown() {
 
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+export { server };

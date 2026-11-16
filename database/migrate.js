@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { pool } from "./db/pool.js";
+import { fileURLToPath } from "node:url";
+import { pool } from "../backend/src/db/pool.js";
 
-const migrationsDir = resolve("/app/migrations");
+const migrationsDir = resolve(process.env.MIGRATIONS_DIR || fileURLToPath(new URL("./migrations/", import.meta.url)));
 const legacyBaseline = ["010_schema.sql", "020_demo_data.sql"];
 const requiredLegacyTables = [
   "departments",

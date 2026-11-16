@@ -103,7 +103,7 @@ async function requestApi(path, { method = "GET", body } = {}) {
     throw Error("Phản hồi API không hợp lệ.");
   }
   if (!response.ok)
-    throw Error(result.error || "Máy chủ chưa thể cung cấp dữ liệu.");
+    throw Error((typeof result.error === "string" ? result.error : result.error?.message) || "Máy chủ chưa thể cung cấp dữ liệu.");
   if (!Object.hasOwn(result || {}, "data"))
     throw Error("Phản hồi API thiếu trường dữ liệu.");
   return result.data;

@@ -1,5 +1,5 @@
 import { pool } from "../db/pool.js";
-import { hashPassword } from "../auth/password.js";
+import { setUserPassword } from "../repositories/account-repository.js";
 
 function readSecret(prompt) {
   if (!process.stdin.isTTY || typeof process.stdin.setRawMode !== "function")
@@ -56,23 +56,8 @@ async function main() {
   const confirmation = await readSecret("Nhập lại mật khẩu: ");
   if (password !== confirmation) throw new Error("Mật khẩu nhập lại không khớp.");
 
-  const passwordHash = await hashPassword(password);
-  const result = await pool.query(
-    `UPDATE users
-        SET password_hash = $2, updated_at = now()
-      WHERE lower(username) = lower($1)
-        AND status = 'Active'
-      RETURNING username`,
-    [username, passwordHash],
-  );
-  if (result.rowCount !== 1)
-    throw new Error("Không tìm thấy tài khoản đang hoạt động với username đó.");
-  await pool.query(
-    `DELETE FROM auth_sessions
-      WHERE user_id = (SELECT id FROM users WHERE lower(username) = lower($1))`,
-    [username],
-  );
-  console.log(`Đã cập nhật mật khẩu cho ${result.rows[0].username}.`);
+  const changedUsername = await setUserPassword(username, password);
+  console.log(`Đã cập nhật mật khẩu cho ${changedUsername}.`);
 }
 
 main()

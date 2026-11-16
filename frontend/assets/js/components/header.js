@@ -13,15 +13,22 @@ export async function renderHeader(page) {
     ["news", "Bản tin", "news"],
     ...(user ? [["work", "Công việc", "work"]] : []),
     ...(user ? [["department", "Phòng ban", "building"]] : []),
-    ...(user?.role === "ADMIN" ? [["admin", "Quản trị", "shield"]] : []),
   ];
   const notifications =
     user
       ? `<div class="dropdown-wrap"><button id="notification-toggle" class="icon-button" aria-label="Thông báo" aria-expanded="false" aria-controls="notification-panel" data-dropdown="notification-panel">${icon("bell")}</button><div class="dropdown-panel" id="notification-panel" hidden></div></div>`
       : "";
-  const profile = user
-    ? `<div class="dropdown-wrap"><button class="profile-button" aria-expanded="false" aria-controls="profile-panel" data-dropdown="profile-panel">${avatar(user)}<span class="profile-name">${esc(user.name)}<small>${user.role === "ADMIN" ? "Quản trị viên" : "Thành viên"}</small></span>${icon("down")}</button><div class="dropdown-panel profile-panel" id="profile-panel" hidden><div class="p-2 muted small-text">${esc(user.username)} · ${preview ? "Phiên xem thử" : "Phiên đăng nhập"}</div><a href="department.html">Phòng ban của tôi</a><a href="work.html">Công việc của tôi</a>${user.role === "ADMIN" ? '<a href="admin.html">Quản lý người dùng</a>' : ""}${preview ? "" : '<button id="change-password">Đổi mật khẩu</button>'}<button id="sign-out">${icon("logout")} ${preview ? "Kết thúc phiên mẫu" : "Đăng xuất"}</button></div></div>`
-    : `<a href="login.html" class="primary-button">Đăng nhập ${icon("arrow")}</a>`;
+  const brand = `<a href="index.html" class="brand" aria-label="An Việt — Trang chủ">${logo()}<span><strong>anviệt<span style="color:var(--accent)">.</span></strong><small>INTERNAL CONNECT</small></span></a>`;
+  const navLinks = links.map(([id, label, ic]) => `<a href="${id}.html" ${page === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></a>`).join("");
+  const adminPage = ["admin", "vpn-admin"].includes(page);
+  const adminMenu = user?.role === "ADMIN"
+    ? `<div class="sidebar-group"><button id="admin-toggle" class="sidebar-link" aria-expanded="${adminPage}" aria-controls="admin-submenu" ${adminPage ? 'data-active="true"' : ""}>${icon("shield")}<span>Quản trị</span>${icon("down")}</button><div id="admin-submenu" class="sidebar-submenu" ${adminPage ? "" : "hidden"}><a href="admin.html" ${page === "admin" ? 'aria-current="page"' : ""}>${icon("users")}<span>Quản lý người dùng</span></a><a href="vpn-admin.html" ${page === "vpn-admin" ? 'aria-current="page"' : ""}>${icon("shield")}<span>Quản trị VPN</span></a></div></div>`
+    : "";
+  const pageLabel = { index: "Trang chủ", news: "Bản tin", work: "Công việc", department: "Phòng ban", admin: "Quản lý người dùng", "vpn-admin": "Quản trị VPN", login: "Đăng nhập" }[page] || "Trang chủ";
+  document.body.classList.toggle("sidebar-layout", Boolean(user));
+  const navigation = user
+    ? `<aside class="sidebar" aria-label="Không gian làm việc">${brand}<div class="sidebar-heading">KHÔNG GIAN LÀM VIỆC</div><nav class="sidebar-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}${adminMenu}</nav><div class="sidebar-account"><div class="sidebar-person">${avatar(user)}<div><strong>${esc(user.name)}</strong><small>${user.role === "ADMIN" ? "Quản trị viên" : "Thành viên"}</small></div></div><p class="sidebar-session">${esc(user.username)} · ${preview ? "Phiên xem thử" : "Đã đăng nhập"}</p>${preview ? "" : `<button class="sidebar-link" id="change-password">${icon("lock")}<span>Đổi mật khẩu</span></button>`}<button class="sidebar-link" id="sign-out">${icon("logout")}<span>${preview ? "Kết thúc phiên mẫu" : "Đăng xuất"}</span></button></div></aside><header class="workspace-header"><div class="page-container workspace-header-inner"><div class="workspace-location"><span>An Việt</span>${icon("chevron")}<span ${adminPage ? "" : 'aria-current="page"'}>${adminPage ? "Quản trị" : pageLabel}</span>${adminPage ? `${icon("chevron")}<strong aria-current="page">${pageLabel}</strong>` : ""}</div><div class="header-actions">${notifications}</div></div></header>`
+    : `<header class="header"><div class="page-container header-inner">${brand}<nav class="main-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}</nav><div class="header-actions"><a href="login.html" class="primary-button">Đăng nhập ${icon("arrow")}</a><button class="icon-button mobile-toggle" id="menu-toggle" aria-label="Mở menu" aria-controls="primary-nav" aria-expanded="false">${icon("menu")}</button></div></div></header>`;
 
   shell.innerHTML = `${
     preview
@@ -38,12 +45,18 @@ export async function renderHeader(page) {
           )
           .join("")}</select><span>Dữ liệu giả lập · Chỉ lưu trong phiên</span><button id="exit-preview" class="secondary-button" style="padding:2px 8px;font-size:var(--font-size-caption)">Thoát xem thử</button></div></div>`
       : ""
-  }<header class="header"><div class="page-container header-inner"><a href="index.html" class="brand" aria-label="An Việt — Trang chủ">${logo()}<span><strong>anviệt<span style="color:var(--accent)">.</span></strong><small>INTERNAL CONNECT</small></span></a><nav class="main-nav" id="primary-nav" aria-label="Điều hướng chính">${links.map(([id, label, ic]) => `<a href="${id === "index" ? "index" : id}.html" ${page === id ? 'aria-current="page"' : ""}>${icon(ic)}${label}</a>`).join("")}</nav><div class="header-actions">${notifications}${profile}<button class="icon-button mobile-toggle" id="menu-toggle" aria-label="Mở menu" aria-controls="primary-nav" aria-expanded="false">${icon("menu")}</button></div></div></header>`;
+  }${navigation}`;
 
   shell
     .querySelector("#preview-user")
     ?.addEventListener("change", (event) => setSession(event.target.value));
   shell.querySelector("#exit-preview")?.addEventListener("click", exitPreview);
+  shell.querySelector("#admin-toggle")?.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    const open = button.getAttribute("aria-expanded") !== "true";
+    button.setAttribute("aria-expanded", String(open));
+    shell.querySelector("#admin-submenu").hidden = !open;
+  });
   shell.querySelector("#sign-out")?.addEventListener("click", async () => {
     if (preview) {
       setSession(null);
@@ -59,7 +72,7 @@ export async function renderHeader(page) {
 
   const menu = shell.querySelector("#menu-toggle");
   const nav = shell.querySelector("#primary-nav");
-  menu.addEventListener("click", () => {
+  menu?.addEventListener("click", () => {
     const open = menu.getAttribute("aria-expanded") !== "true";
     menu.setAttribute("aria-expanded", String(open));
     nav.dataset.open = String(open);

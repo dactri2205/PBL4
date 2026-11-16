@@ -6,6 +6,7 @@ const pages = {
   department: ["Phòng ban", "Không gian phòng ban và đội ngũ An Việt."],
   work: ["Công việc", "Dự án và công việc được phân công."],
   admin: ["Quản trị", "Quản lý tài khoản người dùng mẫu."],
+  "vpn-admin": ["Quản trị VPN", "Quản trị tài khoản, phiên, nhật ký và giám sát VPN."],
 };
 for (const [id, [title, description]] of Object.entries(pages))
   writeFileSync(
@@ -21,6 +22,7 @@ for (const [id, [title, description]] of Object.entries(pages))
   <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
   ${["fonts", "tokens", "base", "layout", "components", "effects", "pages"].map((name) => `<link rel="stylesheet" href="assets/css/${name}.css">`).join("\n  ")}
+  ${id === "vpn-admin" ? '<link rel="stylesheet" href="assets/css/vpn-admin.css">' : ""}
 </head>
 <body data-page="${id}">
   <a class="skip" href="#main-content">Đến nội dung chính</a>
@@ -29,7 +31,7 @@ for (const [id, [title, description]] of Object.entries(pages))
   <div id="site-footer"></div>
   <noscript><p class="page-container">Vui lòng bật JavaScript để sử dụng cổng thông tin.</p></noscript>
   <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
-  <script type="module" src="assets/js/core/app.js"></script>
+  <script type="module" src="assets/js/${id === "vpn-admin" ? "pages/vpn-admin" : "core/app"}.js"></script>
 </body>
 </html>
 `,
