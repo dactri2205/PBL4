@@ -9,8 +9,12 @@ export async function render(root) {
     root.innerHTML = `<article class="article"><a class="text-link" href="news.html">${icon("left")} Tất cả bản tin</a><div class="mt-4"><span class="status-badge info">${esc(selected.category)}</span> <time class="small-text muted" datetime="${esc(selected.date)}">${date(selected.date)}</time></div><h1>${esc(selected.title)}</h1><p class="muted">${esc(selected.summary)}</p><div class="article-body">${selected.body.map((p) => `<p>${esc(p)}</p>`).join("")}</div><p class="small-text muted mt-4">Ban truyền thông An Việt · Nội dung minh họa</p></article>`;
     return;
   }
-  root.innerHTML = `${heading("Thông tin & kết nối", "Bản tin An Việt", "Những cập nhật giúp chúng ta luôn cùng một nhịp.")}<div class="toolbar"><div class="tabs" aria-label="Lọc chuyên mục">${["Tất cả", ...new Set(items.map((n) => n.category))].map((c, i) => `<button data-category="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}</button>`).join("")}</div></div><div class="toolbar">${searchInput("news-search", "Tìm kiếm bản tin")}<span class="result-count" id="news-count" aria-live="polite"></span></div><div class="news-list" id="news-list"></div>`;
+  root.innerHTML = `${heading("Thông tin & kết nối", "Bản tin An Việt", "Những cập nhật giúp chúng ta luôn cùng một nhịp.")}<div class="toolbar news-toolbar"><div class="tabs" aria-label="Lọc chuyên mục">${["Tất cả", ...new Set(items.map((n) => n.category))].map((c, i) => `<button data-category="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}</button>`).join("")}</div>${searchInput("news-search", "Tìm kiếm bản tin")}<span class="result-count" id="news-count" aria-live="polite"></span></div><div class="news-list" id="news-list"></div>`;
   let category = "Tất cả";
+  const list = root.querySelector("#news-list");
+  list.setAttribute("role", "region");
+  list.setAttribute("aria-label", "Danh sách bản tin, cuộn để xem thêm");
+  list.tabIndex = 0;
   const input = root.querySelector("#news-search");
   const paint = () => {
     const q = input.value.trim().toLocaleLowerCase("vi");
@@ -28,6 +32,7 @@ export async function render(root) {
           )
           .join("")
       : '<p class="empty">Không có bản tin phù hợp. Hãy thử từ khóa khác.</p>';
+    list.scrollTop = 0;
   };
   input.addEventListener("input", paint);
   root.querySelector(".tabs").addEventListener("click", (e) => {

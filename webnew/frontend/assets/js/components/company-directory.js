@@ -28,6 +28,7 @@ export async function openCompanyDirectory(mode = "members") {
     wide: true,
   });
   const body = dialog.querySelector(".dialog-body");
+  dialog.classList.add("directory-dialog");
   const title = dialog.querySelector("#dialog-title");
   let dispose = () => {};
   dialog.addEventListener("close", () => dispose(), { once: true });

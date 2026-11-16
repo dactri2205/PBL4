@@ -4,8 +4,9 @@ const page = document.body.dataset.page;
 const main = document.getElementById("main-content");
 try {
   const user = await renderHeader(page);
-  document.getElementById("site-footer").innerHTML =
-    `<footer class="footer"><div class="page-container"><a href="index.html" class="brand">${logo()}<strong>anviệt.</strong></a><span>Kết nối con người. Đồng hành phát triển.</span><span>© ${new Date().getFullYear()} An Việt</span></div></footer>`;
+  document.getElementById("site-footer").innerHTML = ["index", "login"].includes(page)
+    ? `<footer class="footer"><div class="page-container"><a href="index.html" class="brand">${logo()}<strong>anviệt.</strong></a><span>Kết nối con người. Đồng hành phát triển.</span><span>© ${new Date().getFullYear()} An Việt</span></div></footer>`
+    : "";
   if (["department", "work", "admin"].includes(page) && !user) {
     main.className = "page-container page";
     main.innerHTML = empty(
