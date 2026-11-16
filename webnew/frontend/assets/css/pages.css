@@ -60,6 +60,26 @@
   font-style: normal;
   color: #68d7e6;
 }
+/* Keep the hero balanced within the narrower signed-in workspace. */
+.sidebar-layout .hero {
+  padding: 44px 36px;
+  min-height: 460px;
+  gap: 28px;
+}
+.sidebar-layout .hero h1 {
+  font-size: clamp(36px, 3.1vw, 52px);
+}
+.sidebar-layout .hero-image {
+  height: 330px;
+  margin-right: -70px;
+}
+.sidebar-layout .values {
+  gap: 32px;
+  grid-template-columns: 0.85fr 1.7fr;
+}
+.sidebar-layout .value {
+  padding: 16px 18px;
+}
 .hero p {
   font-size: var(--font-size-body);
   line-height: 1.75;
@@ -128,7 +148,7 @@
 .home-update {
   display: flex;
   justify-content: center;
-  margin: 26px 0 45px;
+  margin: 20px 0 32px;
 }
 .update-pill {
   display: inline-flex;
@@ -160,11 +180,22 @@
 .home-stats h2 {
   font-size: 23px;
 }
+.home-stats .kpi {
+  min-height: 0;
+  padding: 18px 20px;
+}
+.home-stats .kpi strong {
+  font-size: 32px;
+  margin: 8px 0 2px;
+}
+.home-stats .kpi-hint {
+  margin-top: 10px;
+}
 .values {
   display: grid;
   grid-template-columns: 1fr 1.7fr;
   gap: 60px;
-  margin: 64px 0 16px;
+  margin: 36px 0 16px;
 }
 .values h2 {
   font-size: 29px;
@@ -176,7 +207,7 @@
   border-block: 1px solid var(--border);
 }
 .value {
-  padding: 24px;
+  padding: 16px 18px;
 }
 .value + .value {
   border-left: 1px solid var(--border);
@@ -188,7 +219,7 @@
 }
 .value h3 {
   font-size: 15px;
-  margin: 20px 0 9px;
+  margin: 12px 0 6px;
 }
 .value p {
   font-size: var(--font-size-body);
@@ -278,7 +309,7 @@
   display: grid;
   grid-template-columns: 110px 1fr 40px;
   gap: 24px;
-  padding: 28px 8px;
+  padding: 16px 8px;
   border-bottom: 1px solid var(--border);
   align-items: center;
 }
@@ -288,7 +319,7 @@
 }
 .news-item h2 {
   font-size: 19px;
-  margin: 8px 0;
+  margin: 4px 0;
 }
 .news-item p {
   color: var(--muted);
@@ -360,10 +391,62 @@
   flex-shrink: 0;
 }
 .admin-summary {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .admin-summary .kpi {
-  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 0;
+  padding: 14px 18px;
+}
+.admin-summary .kpi-top {
+  justify-content: flex-start;
+  gap: 10px;
+}
+.admin-summary .kpi strong {
+  font-size: 30px;
+  margin: 0;
+  flex-shrink: 0;
+}
+body[data-page="department"] .page-top {
+  margin-bottom: 20px;
+}
+body[data-page="department"] .bento > section {
+  padding: 18px 20px;
+}
+body[data-page="department"] .bento > section:first-child {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-content: start;
+  align-items: center;
+  gap: 10px 12px;
+}
+body[data-page="department"] .bento > section:first-child h2 {
+  margin: 0;
+}
+body[data-page="department"] .bento > section:first-child p {
+  grid-column: 1 / -1;
+}
+body[data-page="department"] .bento h2 {
+  margin-block: 8px;
+}
+body[data-page="department"] .bento .big-stat {
+  font-size: 34px;
+  margin: 12px 0 6px;
+}
+body[data-page="department"] .bento-goal {
+  gap: 24px;
+}
+body[data-page="department"] .bento-goal > div:last-child {
+  width: 28%;
+}
+body[data-page="department"] .bento .progress-track {
+  margin-top: 12px;
+}
+body[data-page="department"] .card-carousel {
+  margin-top: 32px;
 }
 .admin-actions {
   display: flex;
@@ -391,6 +474,149 @@
   gap: 8px;
   align-items: center;
   white-space: nowrap;
+}
+/* Workspace density: keep these changes local to the two data pages. */
+body:is([data-page="work"], [data-page="admin"], [data-page="department"], [data-page="news"]) #main-content {
+  min-height: 0;
+  padding-bottom: 24px;
+}
+.work-page .result-count {
+  margin-bottom: 0;
+}
+.work-page > .section {
+  margin-top: 36px;
+}
+.work-page .section-head {
+  margin-bottom: 20px;
+}
+.work-page .project-card {
+  padding: 24px;
+  min-height: 0;
+}
+.work-page .project-card p {
+  min-height: 0;
+}
+.work-page .data-table,
+.admin-page .data-table {
+  table-layout: fixed;
+  min-width: 960px;
+}
+.work-page .table-scroll-region,
+.admin-page .table-scroll-region {
+  max-height: clamp(280px, 52dvh, 460px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.work-page .data-table th,
+.admin-page .data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--border);
+}
+.work-page .data-table th,
+.admin-page .data-table th {
+  padding: 12px 16px;
+}
+.work-page .data-table td,
+.admin-page .data-table td {
+  padding: 12px 16px;
+  overflow-wrap: anywhere;
+}
+.work-page .data-table th:nth-child(2) { width: 18%; }
+.work-page .data-table th:nth-child(3) { width: 16%; }
+.work-page .data-table th:nth-child(4) { width: 10%; }
+.work-page .data-table th:nth-child(5) { width: 16%; }
+.work-page .data-table th:last-child {
+  width: 88px;
+  padding-inline: 8px;
+}
+.admin-page .data-table th:first-child { width: 68px; }
+.admin-page .data-table th:nth-child(3) { width: 14%; }
+.admin-page .data-table th:nth-child(4) { width: 20%; }
+.admin-page .data-table th:nth-child(5) { width: 15%; }
+.admin-page .data-table th:last-child { width: 150px; }
+.news-toolbar .tabs {
+  flex: 1 1 auto;
+}
+.news-toolbar .search {
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+.news-toolbar .result-count {
+  margin-block: 0;
+}
+#news-list {
+  max-height: clamp(300px, 58dvh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding-inline: 16px;
+}
+#news-list .news-item:last-child {
+  border-bottom: 0;
+}
+body[data-page="department"] .card-carousel .section-head {
+  margin-bottom: 14px;
+}
+body[data-page="login"] .login-page {
+  padding-block: 32px;
+}
+.login-card {
+  padding-block: 32px;
+}
+.login-card .login-symbol {
+  margin-bottom: 16px;
+}
+.login-card .login-intro {
+  margin-bottom: 22px;
+}
+.login-card .field {
+  margin-bottom: 16px;
+}
+@media (min-width: 1101px) {
+  #work-projects:has(> .project-card:nth-child(2):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #work-projects:has(> .project-card:only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #work-projects > .project-card:only-child .project-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    column-gap: 40px;
+    row-gap: 10px;
+  }
+  #work-projects > .project-card:only-child .project-top {
+    grid-area: 1 / 1;
+  }
+  #work-projects > .project-card:only-child h3 {
+    grid-area: 2 / 1;
+    margin: 0;
+  }
+  #work-projects > .project-card:only-child p {
+    grid-area: 3 / 1;
+    margin: 0;
+  }
+  #work-projects > .project-card:only-child .progress-label {
+    grid-area: 1 / 2;
+    align-self: end;
+    margin: 0;
+  }
+  #work-projects > .project-card:only-child .progress-track {
+    grid-area: 2 / 2;
+    align-self: center;
+  }
+  #work-projects > .project-card:only-child .project-bottom {
+    grid-area: 3 / 2;
+    align-self: start;
+    flex-wrap: wrap;
+    margin: 0;
+  }
 }
 @media (max-width: 1000px) {
   .hero {

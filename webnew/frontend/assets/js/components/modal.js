@@ -1,8 +1,8 @@
 import { esc, icon } from "../core/ui.js";
-export function openModal({ title, body, drawer = false, wide = false }) {
+export function openModal({ title, body, drawer = false, wide = false, scrollable = false }) {
   const previous = document.activeElement;
   const dialog = document.createElement("dialog");
-  dialog.className = `dialog${drawer ? " task-drawer" : ""}${wide ? " dialog-wide" : ""}`;
+  dialog.className = `dialog${drawer ? " task-drawer" : ""}${wide ? " dialog-wide" : ""}${scrollable ? " dialog-scroll" : ""}`;
   dialog.setAttribute("aria-labelledby", "dialog-title");
   dialog.innerHTML = `<div class="dialog-header"><h2 id="dialog-title">${esc(title)}</h2><button class="icon-button" data-close aria-label="Đóng">${icon("close")}</button></div><div class="dialog-body">${body}</div>`;
   document.body.append(dialog);

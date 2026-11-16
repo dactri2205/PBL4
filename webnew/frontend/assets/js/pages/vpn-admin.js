@@ -1,10 +1,13 @@
 import { vpnApi } from "../services/vpn-api.js";
-import { esc, icon, logo, heading, toast } from "../core/ui.js";
+import { esc, icon, heading, toast } from "../core/ui.js";
 import { openModal } from "../components/modal.js";
+import { renderHeader } from "../components/header.js";
 
 const root = document.getElementById("main-content");
 root.classList.add("vpn-page");
-document.getElementById("site-header").innerHTML = `<header class="header"><div class="page-container header-inner"><a href="index.html" class="brand">${logo()}<strong>anviệt.</strong></a><nav class="main-nav" aria-label="Điều hướng VPN"><a href="index.html">${icon("home")}Trang chủ</a><a href="vpn-admin.html" aria-current="page">${icon("shield")}Quản trị VPN</a></nav><a class="secondary-button" href="login.html">Cổng nhân viên</a></div></header>`;
+// Use the portal navigation; VPN access is still verified separately below.
+try { await renderHeader("vpn-admin"); }
+catch (error) { console.error("Không thể tải điều hướng website.", error); }
 document.getElementById("site-footer").innerHTML = '<footer class="footer"><div class="page-container">An Việt · MiniVPN · Quyền quản trị được xác minh bởi backend website. Tài khoản VPN và dữ liệu xem thử là riêng biệt.</div></footer>';
 const life = new AbortController();
 let timer, busy = false, updating = false, accounts = [], sessions = [], page = 1, logFilters = {};
