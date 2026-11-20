@@ -3,6 +3,13 @@ import { isPreview, setSession, exitPreview } from "../core/demo-session.js";
 import { esc, icon, logo, avatar } from "../core/ui.js";
 import { initNotifications } from "./notifications.js";
 import { openModal } from "./modal.js";
+import { currentTheme, toggleTheme } from "../core/theme.js";
+
+const themeLabel = (theme) => (theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối");
+const themeButton = () => {
+  const theme = currentTheme();
+  return `<button id="theme-toggle" class="icon-button theme-toggle" type="button" aria-label="${themeLabel(theme)}" title="${themeLabel(theme)}" aria-pressed="${theme === "dark"}">${icon(theme === "dark" ? "sun" : "moon")}</button>`;
+};
 
 export async function renderHeader(page) {
   const user = await api.getCurrentUser();
@@ -27,8 +34,8 @@ export async function renderHeader(page) {
   const pageLabel = { index: "Trang chủ", news: "Bản tin", work: "Công việc", department: "Phòng ban", admin: "Quản lý người dùng", "vpn-admin": "Quản trị VPN", login: "Đăng nhập" }[page] || "Trang chủ";
   document.body.classList.toggle("sidebar-layout", Boolean(user));
   const navigation = user
-    ? `<aside class="sidebar" aria-label="Không gian làm việc">${brand}<div class="sidebar-heading">KHÔNG GIAN LÀM VIỆC</div><nav class="sidebar-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}${adminMenu}</nav><div class="sidebar-account"><div class="sidebar-person">${avatar(user)}<div><strong>${esc(user.name)}</strong><small>${user.role === "ADMIN" ? "Quản trị viên" : "Thành viên"}</small></div></div><p class="sidebar-session">${esc(user.username)} · ${preview ? "Phiên xem thử" : "Đã đăng nhập"}</p>${preview ? "" : `<button class="sidebar-link" id="change-password">${icon("lock")}<span>Đổi mật khẩu</span></button>`}<button class="sidebar-link" id="sign-out">${icon("logout")}<span>${preview ? "Kết thúc phiên mẫu" : "Đăng xuất"}</span></button></div></aside><header class="workspace-header"><div class="page-container workspace-header-inner"><div class="workspace-location"><span>An Việt</span>${icon("chevron")}<span ${adminPage ? "" : 'aria-current="page"'}>${adminPage ? "Quản trị" : pageLabel}</span>${adminPage ? `${icon("chevron")}<strong aria-current="page">${pageLabel}</strong>` : ""}</div><div class="header-actions">${notifications}</div></div></header>`
-    : `<header class="header"><div class="page-container header-inner">${brand}<nav class="main-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}</nav><div class="header-actions"><a href="login.html" class="primary-button">Đăng nhập ${icon("arrow")}</a><button class="icon-button mobile-toggle" id="menu-toggle" aria-label="Mở menu" aria-controls="primary-nav" aria-expanded="false">${icon("menu")}</button></div></div></header>`;
+    ? `<aside class="sidebar" aria-label="Không gian làm việc">${brand}<div class="sidebar-heading">KHÔNG GIAN LÀM VIỆC</div><nav class="sidebar-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}${adminMenu}</nav><div class="sidebar-account"><div class="sidebar-person">${avatar(user)}<div><strong>${esc(user.name)}</strong><small>${user.role === "ADMIN" ? "Quản trị viên" : "Thành viên"}</small></div></div><p class="sidebar-session">${esc(user.username)} · ${preview ? "Phiên xem thử" : "Đã đăng nhập"}</p>${preview ? "" : `<button class="sidebar-link" id="change-password">${icon("lock")}<span>Đổi mật khẩu</span></button>`}<button class="sidebar-link" id="sign-out">${icon("logout")}<span>${preview ? "Kết thúc phiên mẫu" : "Đăng xuất"}</span></button></div></aside><header class="workspace-header"><div class="page-container workspace-header-inner"><div class="workspace-location"><span>An Việt</span>${icon("chevron")}<span ${adminPage ? "" : 'aria-current="page"'}>${adminPage ? "Quản trị" : pageLabel}</span>${adminPage ? `${icon("chevron")}<strong aria-current="page">${pageLabel}</strong>` : ""}</div><div class="header-actions">${themeButton()}${notifications}</div></div></header>`
+    : `<header class="header"><div class="page-container header-inner">${brand}<nav class="main-nav" id="primary-nav" aria-label="Điều hướng chính">${navLinks}</nav><div class="header-actions">${themeButton()}<a href="login.html" class="primary-button">Đăng nhập ${icon("arrow")}</a><button class="icon-button mobile-toggle" id="menu-toggle" aria-label="Mở menu" aria-controls="primary-nav" aria-expanded="false">${icon("menu")}</button></div></div></header>`;
 
   shell.innerHTML = `${
     preview
@@ -51,6 +58,14 @@ export async function renderHeader(page) {
     .querySelector("#preview-user")
     ?.addEventListener("change", (event) => setSession(event.target.value));
   shell.querySelector("#exit-preview")?.addEventListener("click", exitPreview);
+  shell.querySelector("#theme-toggle")?.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    const theme = toggleTheme();
+    button.innerHTML = icon(theme === "dark" ? "sun" : "moon");
+    button.setAttribute("aria-label", themeLabel(theme));
+    button.setAttribute("title", themeLabel(theme));
+    button.setAttribute("aria-pressed", String(theme === "dark"));
+  });
   shell.querySelector("#admin-toggle")?.addEventListener("click", (event) => {
     const button = event.currentTarget;
     const open = button.getAttribute("aria-expanded") !== "true";

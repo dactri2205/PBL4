@@ -871,3 +871,21 @@
   color: var(--muted);
   margin: 15px 0;
 }
+
+/* Giao diện tối: các thành phần dùng màu trắng cố định */
+[data-theme="dark"] .primary-button {
+  background: var(--surface);
+}
+[data-theme="dark"] .count {
+  color: var(--bg);
+  border-color: var(--surface);
+}
+[data-theme="dark"] .toast-message {
+  color: var(--bg);
+}
+.theme-toggle .icon {
+  transition: transform 300ms ease;
+}
+.theme-toggle:hover .icon {
+  transform: rotate(20deg);
+}

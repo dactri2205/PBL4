@@ -29,6 +29,10 @@ var app = builder.Build();
 app.UseVpnErrors();
 app.MapVpnGateway();
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // Luôn hỏi lại server (ETag/304) để trình duyệt không giữ CSS/JS cũ sau khi cập nhật giao diện.
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "no-cache"
+});
 
 app.Run();

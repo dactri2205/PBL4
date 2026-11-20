@@ -8,6 +8,8 @@ export function esc(value = "") {
   );
 }
 const paths = {
+  sun: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
+  moon: "M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z",
   home: "M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9",
   news: "M5 3h14v18H5zM8 7h8M8 11h8M8 15h3M8 18h7",
   building: "M4 21V5h10v16M14 10h6v11M8 9h2M8 13h2M8 17h2M2 21h20",

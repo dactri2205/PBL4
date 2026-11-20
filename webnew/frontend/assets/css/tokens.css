@@ -48,3 +48,32 @@
   --space-20: 80px;
   --max-width: 1280px;
 }
+
+/* Giao diện tối — bật bằng data-theme="dark" trên <html> (xem js/core/theme.js) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1519;
+  --surface: #142027;
+  --border: #253740;
+  --text: #e3ecef;
+  --muted: #97a8b1;
+  --accent: #3ec2d9;
+  --accent-hover: #72d5e6;
+  --selected: #113640;
+  --success: #74d99b;
+  --success-bg: #12301f;
+  --warning: #f3b968;
+  --warning-bg: #382912;
+  --error: #ff8b7c;
+  --error-bg: #3c1a16;
+  --neutral: #a6b4c1;
+  --neutral-bg: #1d2a33;
+  --pure-black: #e3ecef;
+  --shadow: 0 16px 60px #00000070;
+  --hover-border: #2f6f7c;
+  --hover-surface: #16303a;
+  --shadow-kpi-hover: 0 10px 24px #00000045;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
